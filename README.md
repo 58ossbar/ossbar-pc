@@ -25,5 +25,18 @@
 
 其他功能：我的云盘、我的资源、我的博客、我的课表、我的成绩
 
-具体可咨询客服获取【体验账号】了解详细功能
+# 功能截图
 
+![](https://www.ossbar.com/codeshop/uploads/f535e3d8-0326-4ace-befb-d0dbf0e75cac.png "首页")
+
+![](https://www.ossbar.com/codeshop/uploads/2e0f0b1c-e46c-47e1-9736-598027dc6a9a.png "首页")
+
+![](https://www.ossbar.com/codeshop/uploads/3bb2203a-dc98-48fe-b24b-2bf6714c11b3.png "课堂")
+
+![](https://www.ossbar.com/codeshop/uploads/e785181b-705a-4c59-890b-97f1e30d7f09.png "活教材")
+
+![](https://www.ossbar.com/codeshop/uploads/f923f456-e3a0-4798-8815-48da39fe9488.png "实训平台")
+
+![](https://www.ossbar.com/codeshop/uploads/84a8c076-c21f-4fe0-9c29-ff127c41f198.png "评测中心")
+
+具体可咨询客服获取【体验账号】了解详细功能

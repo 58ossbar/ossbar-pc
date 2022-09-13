@@ -9,15 +9,6 @@ export const listMyClassroom = params => {
   })
 }
 
-// 我的云上课堂信息2.0
-export const queryClassroomList = params => {
-  return axios({
-    url: '/index-api/queryClassroomList',
-    methods: 'get',
-    params
-  })
-}
-
 // 根据课堂id显示课堂详情页
 export const classroomDetails = params => {
   return axios({
@@ -86,23 +77,6 @@ export const getDates = data => {
   })
 }
 
-// 设置经验值弹窗 查询 经验值
-export const viewEmpiricalSetting = data => {
-  return axios({
-    url: '/classroom-api/empirical/viewEmpiricalSetting',
-    method: 'post',
-    data
-  })
-}
-// 设置经验值弹窗 保存  经验值
-export const saveSetting = data => {
-  return axios({
-    url: '/classroom-api/empirical/saveSetting',
-    method: 'post',
-    data
-  })
-}
-
 // 查看课程内容，滑动到最下面时，触发此接口
 export const viewChapter = data => {
   return axios({
@@ -125,38 +99,5 @@ export const viewAudio = data => {
     url: '/classroom-api/empirical/log/viewAudio',
     method: 'post',
     data
-  })
-}
-
-// 设置助教权限 弹窗 查询 助教权限
-export const viewAssiPermsSetting = data => {
-  return axios({
-    url: '/classroom-api/getTreeData',
-    method: 'post',
-    data
-  })
-}
-// 设置助教权限弹窗 保存  助教权限
-export const saveAssiPermsSetting = data => {
-  return axios({
-    url: '/classroom-api/savePermissionSet',
-    method: 'post',
-    data
-  })
-}
-
-export const saveClassroomSetting = data => {
-  return axios({
-    url: '/classroom-api/setting/saveSetting',
-    method: 'post',
-    data
-  })
-}
-
-export const viewClassroomSetting = params => {
-  return axios({
-    url: '/classroom-api/setting/viewSetting',
-    method: 'get',
-    params
   })
 }

@@ -166,6 +166,10 @@ export default {
       this.$router.push('/login')
     },
     clickHeadNav(item) {
+      if (this.showLogin) {
+        this.toLogin()
+        return false
+      }
     },
     handleScroll() {
       var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop

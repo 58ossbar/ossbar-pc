@@ -307,11 +307,15 @@ export default {
   watch: {
     // 监听树节点的变化更新树
     'zNodes': function(val) {
-      this.freshArea()
+      if (val && val.length > 0) {
+        this.freshArea()
+      }
     }
   },
   mounted() {
-    this.freshArea()
+    if (this.zNodes && this.zNodes.length > 0) {
+      this.freshArea()
+    }
   },
   methods: {
     doDemotionNodes() {

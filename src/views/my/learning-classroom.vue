@@ -1,7 +1,7 @@
 <!-- 我的课堂的显示页面 -->
 <template>
   <div class="backgroundColorGrey" >
-    <header-nav :current-index="isTeacher ? 6 : 8" />
+    <header-nav :current-index="ifTeacher ? 6 : 8" />
     <div class="my-teaching-nav wind-1240">
       <div class="display-flex">
         <div class="location">
@@ -10,13 +10,13 @@
             <li class="localtion-item" style="cursor: pointer" @click="toback()">
               管理看板
             </li>
-            <li v-if="!isTeacher" class="localtion-item">
+            <li v-if="!ifTeacher" class="localtion-item">
               <span style="color: #959da0">我的课堂</span>
             </li>
-            <li v-if="isTeacher" class="localtion-item">
+            <li v-if="ifTeacher" class="localtion-item">
               <span >学习中心</span>
             </li>
-            <li v-if="isTeacher" class="localtion-item">
+            <li v-if="ifTeacher" class="localtion-item">
               <span style="color: #959da0">{{ type }}</span>
             </li>
           </ul>
@@ -161,7 +161,7 @@ export default {
   },
   data() {
     return {
-      isTeacher: false,
+      ifTeacher: false,
       myClassList: [], // 课堂列表
       // 分页信息
       pagerInfo: {
@@ -190,7 +190,7 @@ export default {
   mounted() {
     // 判断当前人的身份
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.isTeacher = userInfo.isTeacher
+    this.ifTeacher = userInfo.ifTeacher
     this.getDates()
     this.getClassList()
   },

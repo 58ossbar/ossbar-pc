@@ -151,7 +151,7 @@
                 :value="item.id"/>
             </select>
           </div>
-          <div v-if="isTeacher" class="group-form">
+          <div v-if="ifTeacher" class="group-form">
             <div class="group-name">
               教师证
               <span>*</span>
@@ -285,7 +285,7 @@ export default {
       teacherNameState: null,
       teacherPic: '',
       isEditPic: false, // 是否编辑头像
-      isTeacher: false,
+      ifTeacher: false,
       traineeSexList: [{ id: 0, value: '保密' }, { id: 1, value: '男' }, { id: 2, value: '女' }],
       password: {
         originalPassword: '',
@@ -392,7 +392,7 @@ export default {
       $('#nickName').removeAttr('style')
       formVaildStyle('.nickNameHint', '#nickName')
 
-      if (this.isTeacher) {
+      if (this.ifTeacher) {
         if ((!this.editInfo.teacherErtificateNumber) || (this.editInfo.teacherErtificateNumber.length !== 17)) {
           formInVaildStyle('.teacherErtificateNumberHint', '#teacherErtificateNumber')
           $('#teacherErtificateNumber').css('borderColor', '#dc3545')
@@ -444,7 +444,7 @@ export default {
           formData.append('nickName', this.editInfo.nickName)
           formData.append('traineeSex', this.editInfo.traineeSex)
           formData.append('email', this.editInfo.email)
-          if (this.isTeacher) {
+          if (this.ifTeacher) {
             formData.append('teacherErtificateNumber', this.editInfo.teacherErtificateNumber)
           }
           formData.append('jobNumber', this.editInfo.jobNumber)
@@ -487,7 +487,7 @@ export default {
             this.editInfo.jobNumber = res.data.basicInfo.jobNumber
             this.basicInfo = res.data.basicInfo
             this.charmInfo = res.data.charmInfo
-            this.isTeacher = res.isTeacher
+            this.ifTeacher = res.ifTeacher
             if (res.data.basicInfo.traineeSex) {
               this.editInfo.traineeSex = parseInt(res.data.basicInfo.traineeSex)
             }

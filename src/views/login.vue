@@ -187,7 +187,7 @@ export default {
           localStorage.setItem('mobile', this.dataForm.inputAccountLogin)
           localStorage.setItem('username', res.data.nickName)
           localStorage.setItem('userInfo', JSON.stringify(res.data))
-          localStorage.setItem('isTeacher', res.data.isTeacher ? 'Y' : 'N')
+          localStorage.setItem('ifTeacher', res.data.ifTeacher ? 'Y' : 'N')
           this.setCookies(res)
           if (localStorage.getItem('toLoginUrl')) {
             let address = localStorage.getItem('toLoginUrl').split('#')[1]

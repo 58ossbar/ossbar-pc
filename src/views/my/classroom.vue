@@ -416,8 +416,8 @@ export default {
          * 点击开设课堂
          */
     toaddclassroom: function() {
-      const isTeacher = localStorage.getItem('isTeacher')
-      if (isTeacher !== 'Y') {
+      const ifTeacher = localStorage.getItem('ifTeacher')
+      if (ifTeacher !== 'Y') {
         toast('还未开通新建【课堂】授权，请联系管理员！')
         return false
       }

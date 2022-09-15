@@ -1,8 +1,8 @@
 <template>
   <div class="backgroundColorGrey">
     <header-nav/>
-    <manage-board v-if="isTeacher"/>
-    <personal-center v-if="!isTeacher"/>
+    <manage-board v-if="ifTeacher"/>
+    <personal-center v-if="!ifTeacher"/>
     <!--<footer-nav></footer-nav>-->
   </div>
 </template>
@@ -12,7 +12,6 @@ import HeaderNav from '@/components/header-nav'
 import FooterNav from '@/components/footer-nav-not-info'
 import manageBoard from '@/views/manage-board/manage-board'
 import PersonalCenter from '@/views/management-kanban/personal-center'
-import { handleImagePath } from '@/utils/util'
 export default {
   components: {
     'header-nav': HeaderNav,
@@ -22,22 +21,10 @@ export default {
   },
   data() {
     return {
-      isTeacher: false
+      ifTeacher: false
     }
   },
   mounted() {
-    // this.$api.login.getUser().then((res) => {
-    //   // 处理头像
-    //   res.data.traineeHead = handleImagePath(res.data.traineeHead)
-    //   // 保存至缓存中
-    //   localStorage.setItem('username', res.data.nickName)
-    //   localStorage.setItem('userimg', res.data.traineeHead)
-    //   localStorage.setItem('userInfo', JSON.stringify(res.data))
-    //   localStorage.setItem('isTeacher', res.data.isTeacher ? 'Y' : 'N')
-    //   const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    //   this.userName = userInfo.nickName
-    //   this.isTeacher = userInfo.isTeacher
-    // })
   },
   methods: {
 

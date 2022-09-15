@@ -287,26 +287,9 @@ export default {
     }
   },
   created() {
-    /* if ('true' === this.isEdit){
-              this.dataForm = this.$route.query.classroom;
-              this.showClassList();
-            } */
     this.showClassroomData()
   },
   mounted() {
-    // this.$api.login.checkIsLogin().then((res) => {
-    //   if (res.code == 0) {
-    //     if (res.data.isTeacher) {
-    //       this.$router.push("/my/add-classroom");
-    //     } else {
-    //       this.$router.push("/");
-    //     }
-    //   } else {
-    //     cbalert.alert(res.msg, () => {
-    //       this.$router.push("/login");
-    //     })
-    //   }
-    // })
     if (this.isEdit) {
       const obj = this.$route.query.classroom
       this.$api.classroom.viewClassroomBaseInfo({ ctId: obj.ctId }).then(res => {

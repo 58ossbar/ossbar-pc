@@ -11,13 +11,13 @@
               <li class="localtion-item" style="cursor: pointer" @click="toback()">
                 管理看板
               </li>
-              <li v-if="isTeacher" class="localtion-item">
+              <li v-if="ifTeacher" class="localtion-item">
                 <span>教学包</span>
               </li>
-              <li v-if="isTeacher" class="localtion-item">
+              <li v-if="ifTeacher" class="localtion-item">
                 <span style="color: #959da0">我的教学包</span>
               </li>
-              <li v-if="!isTeacher" class="localtion-item">
+              <li v-if="!ifTeacher" class="localtion-item">
                 <span style="color: #959da0">我的书架</span>
               </li>
             </ul>
@@ -28,7 +28,7 @@
           </div>
         </div>
         <div class="my-teaching-search">
-          <el-select v-if="isTeacher" v-model="params.type" size="medium" style="margin-left:20px;" placeholder="请选择教学包状态" @change="toShowPkgList">
+          <el-select v-if="ifTeacher" v-model="params.type" size="medium" style="margin-left:20px;" placeholder="请选择教学包状态" @change="toShowPkgList">
             <el-option
               v-for="item in releaseStatusList"
               :key="item.value"
@@ -43,14 +43,14 @@
               :value="item.subjectId"/>
           </el-select>
           <el-input
-            :placeholder="'请输入' + (isTeacher ? '教学包' : '书籍') + '名称'"
+            :placeholder="'请输入' + (ifTeacher ? '教学包' : '书籍') + '名称'"
             v-model="params.pkgName"
             size="medium"
             style="width:20%;margin-left:2%;"
             clearable
             @keyup.enter.native="toShowPkgList"/>
           <el-input
-            v-if="isTeacher"
+            v-if="ifTeacher"
             v-model="params.pkgVersion"
             placeholder="请输入教学包版本号"
             size="medium"
@@ -80,7 +80,7 @@
         <div class="serachLibrary teaching-package-con">
           <!-- col-md-2 col-sm-4  -->
           <div
-            v-if="isTeacher"
+            v-if="ifTeacher"
             class="booksAddB add-teaching-package-btn"
             @click="addPkgInfo">
             <!--@click="toTeachingPackageDetail"-->
@@ -121,7 +121,7 @@
                 <span v-if="item.releaseStatus == 'Y'" class="cb-bookbox-num">{{ item.howManyPeopleUseIt }}人在使用</span>
               </div>
               <!-- !item.isCreator && item.isTogetherBuild -->
-              <span v-if="!item.isCreator && item.isTogetherBuild && isTeacher" class="together active" style="height:20px;width: 100px;"/>
+              <span v-if="!item.isCreator && item.isTogetherBuild && ifTeacher" class="together active" style="height:20px;width: 100px;"/>
               <span v-if="item.type == 'auth'" class="auth active"/>
               <span v-if="item.type == 'receiver'" class="receiver active"/>
               <!-- <div v-if="item.isCreator" :class="['teaching-package-state',item.releaseStatus === 'N' ? 'teaching-package-state-N':'teaching-package-state-Y']">
@@ -149,9 +149,9 @@
                 </el-tag>
               </div>
             </div>
-            <i v-if="item.hasDeleteIcon && isTeacher" class="fa fa-times-circle-o del-code" aria-hidden="true" @click.stop="delPkgTrainee(item.pkgId)"/>
-            <i v-if="item.hasEditPermission && !item.isShowChildren && isTeacher" class="fa fa-edit edit-code" aria-hidden="true" @click.stop="updatePkg(item.pkgId)"/>
-            <img v-if="isTeacher && item.children && item.children.length > 0" :src="item.isShowChildren ? 'static/image/teaching_center/back_3.png' : 'static/image/teaching_center/more.png'" :title="item.isShowChildren ? '返回' : '查看衍生版本'" class="more-code" @click.stop="item.isShowChildren = !item.isShowChildren">
+            <i v-if="item.hasDeleteIcon && ifTeacher" class="fa fa-times-circle-o del-code" aria-hidden="true" @click.stop="delPkgTrainee(item.pkgId)"/>
+            <i v-if="item.hasEditPermission && !item.isShowChildren && ifTeacher" class="fa fa-edit edit-code" aria-hidden="true" @click.stop="updatePkg(item.pkgId)"/>
+            <img v-if="ifTeacher && item.children && item.children.length > 0" :src="item.isShowChildren ? 'static/image/teaching_center/back_3.png' : 'static/image/teaching_center/more.png'" :title="item.isShowChildren ? '返回' : '查看衍生版本'" class="more-code" @click.stop="item.isShowChildren = !item.isShowChildren">
           </div>
         </div>
         <div>
@@ -194,7 +194,7 @@ export default {
   data() {
     return {
       notifyPromise: Promise.resolve(),
-      isTeacher: false,
+      ifTeacher: false,
       // 查询条件
       params: {
         type: '',
@@ -232,7 +232,7 @@ export default {
   mounted() {
     // 判断当前人的身份
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.isTeacher = userInfo.isTeacher
+    this.ifTeacher = userInfo.ifTeacher
     // 初始化教学包
     this.showPkgList()
     //
@@ -319,7 +319,7 @@ export default {
       this.params.pageNum = this.pagerInfo.currPage
       this.params.pageSize = this.pagerInfo.pageSize
 
-      if (this.isTeacher) {
+      if (this.ifTeacher) {
         this.$api.pkgInfo.listPkgInfo(this.params).then((res) => {
           if (res.code === 0) {
             this.pagerInfo.totalPage = res.data.totalPage
@@ -399,8 +399,8 @@ export default {
      * 进入新增教学包页面
      */
     addPkgInfo() {
-      const isTeacher = localStorage.getItem('isTeacher')
-      if (isTeacher !== 'Y') {
+      const ifTeacher = localStorage.getItem('ifTeacher')
+      if (ifTeacher !== 'Y') {
         toast('还未开通新建【教学包】授权，请联系管理员！')
         return false
       }

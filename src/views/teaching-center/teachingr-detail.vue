@@ -1,7 +1,7 @@
 <!-- 课堂的主页面 -->
 <template>
   <div class="teaching-center-box" >
-    <header-nav :current-index="hasPermission?4:(isTeacher ? 6 : 8)" :is-hide-nav-on-scroll="true"/>
+    <header-nav :current-index="hasPermission?4:(ifTeacher ? 6 : 8)" :is-hide-nav-on-scroll="true"/>
     <div class="wind-1240 header-box">
       <div class="serachLibrary" >
         <img :src="classroomInfo.pic" class="teaching-packa-img">
@@ -345,7 +345,7 @@ export default {
   },
   created() {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.isTeacher = userInfo.isTeacher
+    this.ifTeacher = userInfo.ifTeacher
     this.pkgId = localStorage.getItem('pkgId')
     this.ct_id = localStorage.getItem('ct_id')
     this.subjectId = localStorage.getItem('subjectId')

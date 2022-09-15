@@ -12,7 +12,7 @@
               <li class="localtion-item" style="cursor: pointer" @click="toback()">
                 管理看板
               </li>
-              <li v-if="isTeacher" class="localtion-item">
+              <li v-if="ifTeacher" class="localtion-item">
                 <span >学习中心</span>
               </li>
               <li class="localtion-item">
@@ -113,7 +113,7 @@ export default {
   },
   data() {
     return {
-      isTeacher: false,
+      ifTeacher: false,
       clicked: 0, // 分类选择下标
       subClicked: 0, // 技术选中下标
       sortClicked: 0, // 排序选中下标
@@ -152,7 +152,7 @@ export default {
   mounted() {
     // 判断当前人的身份
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.isTeacher = userInfo.isTeacher
+    this.ifTeacher = userInfo.ifTeacher
     localStorage.removeItem('bookshelfReadData')
     // this.findDatas()
     this.$nextTick(function() {

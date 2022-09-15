@@ -309,13 +309,12 @@ export default {
   },
   mounted() {
     const token = Cookies.get(tokenKeyName)
-    this.showLogin = true
     if (token) {
-      this.$api.login.getUser().then((res) => {
-        this.showLogin = false
-      })
+      this.showLogin = false
       // 获取个人信息
       this.getPersonalInfo()
+    } else {
+      this.$router.push('/login')
     }
   },
   methods: {

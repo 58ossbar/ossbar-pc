@@ -4,8 +4,8 @@
     <div class="header-nav-fixed">
       <div class="nav-con wind-1240">
         <div class="nav-logo">
-          <img :alt="isTeacher ? '教学平台' : '实训平台'" src="static/image/platfromLog.png">
-          <span class="logo-text color-fff">{{ isTeacher ? '教学平台' : '实训平台' }}</span>
+          <img :alt="ifTeacher ? '教学平台' : '实训平台'" src="static/image/platfromLog.png">
+          <span class="logo-text color-fff">{{ ifTeacher ? '教学平台' : '实训平台' }}</span>
         </div>
         <div class="nav-menu">
           <!-- :to="(item.id !== 2 && item.id != 7) ? {path:item.path} : '#'" -->
@@ -79,7 +79,7 @@ export default {
       showLogin: true,
       userInputSearch: '',
       isScroll: false,
-      isTeacher: true,
+      ifTeacher: true,
       routerList: [
         {
           id: 1,
@@ -118,7 +118,7 @@ export default {
   },
   mounted() {
     window.addEventListener('scroll', this.handleScroll)
-    this.isTeacher = false
+    this.ifTeacher = false
 
     const token = Cookies.get(tokenKeyName)
     if (token) {
@@ -129,14 +129,14 @@ export default {
         localStorage.setItem('username', res.data.nickName)
         localStorage.setItem('userimg', res.data.traineeHead)
         localStorage.setItem('userInfo', JSON.stringify(res.data))
-        localStorage.setItem('isTeacher', res.data.isTeacher ? 'Y' : 'N')
+        localStorage.setItem('ifTeacher', res.data.ifTeacher ? 'Y' : 'N')
         const userInfo = JSON.parse(localStorage.getItem('userInfo'))
         this.userName = userInfo.nickName
-        this.isTeacher = userInfo.isTeacher
+        this.ifTeacher = userInfo.ifTeacher
         this.userImg = localStorage.getItem('userimg')
         this.showLogin = false
         this.showUserName = true
-        if (!this.isTeacher) {
+        if (!this.ifTeacher) {
           this.routerList = [
             {
               id: 1,

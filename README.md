@@ -27,6 +27,7 @@
 
 # 环境搭建
 
+详细搭建说明见：https://www.ossbar.com/#/platformConsultingDetails?newsId=165
 
 # 功能截图
 

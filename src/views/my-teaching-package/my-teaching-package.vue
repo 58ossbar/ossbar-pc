@@ -174,6 +174,7 @@
 import { baseUrl, confirm, toast } from '@/utils/global'
 import HeaderNav from '@/components/header-nav'
 import Pager from '@/components/pager'
+import { handleImagePath } from '@/utils/util'
 // import FooterNav from '@/components/footer-nav-not-info'
 export default {
   name: 'MyTeachingPackage',
@@ -325,7 +326,8 @@ export default {
             this.pagerInfo.totalPage = res.data.totalPage
             res.data.list.forEach(a => {
               if (a.pkgLogo) {
-                a.pkgLogo = baseUrl + a.pkgLogo
+                // a.pkgLogo = baseUrl + a.pkgLogo
+                a.pkgLogo = handleImagePath(a.pkgLogo)
               }
               a.isShowChildren = false
             })

@@ -277,7 +277,8 @@
 <script>
 import $ from '@/assets/jquery-vendor'
 import HeaderNav from '@/components/header-nav'
-import { baseUrl, toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
+import { toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
+import { handleImagePath } from '@/utils/util'
 export default {
   name: 'AddPackageInfo',
   components: {
@@ -329,7 +330,7 @@ export default {
       this.edit = true
       this.$api.pkgInfo.viewPkgInfoForUpdate(pkgId).then(res => {
         if (res.code === 0) {
-          res.data.pkgLogo = baseUrl + res.data.pkgLogo
+          res.data.pkgLogo = handleImagePath(res.data.pkgLogo)
           this.dataForm = Object.assign({}, res.data)
         }
       })

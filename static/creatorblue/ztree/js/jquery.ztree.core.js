@@ -1086,7 +1086,7 @@
         var _tmpV = data.getRoot(setting)._ver;
         $.ajax({
           beforeSend: function (XMLHttpRequest) {
-            //console.log('配置'+ setting.async.tokenKeyName, setting.async.token)
+            // console.log('配置', setting.async.tokenKeyName, setting.async.token)
             XMLHttpRequest.setRequestHeader(setting.async.tokenKeyName, setting.async.token);
           },
           contentType: setting.async.contentType,

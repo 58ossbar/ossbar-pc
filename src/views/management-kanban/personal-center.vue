@@ -314,6 +314,7 @@ export default {
       // 获取个人信息
       this.getPersonalInfo()
     } else {
+       this.showLogin = true
       this.$router.push('/login')
     }
   },

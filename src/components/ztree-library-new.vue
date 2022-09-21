@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import $ from 'jquery'
+import $ from '@/assets/jquery-vendor'
 import Cookies from 'js-cookie'
 import { baseUrl, fuzzySearch, toast, confirm } from '@/utils/global'
 import ModalDialog from '@/components/modal-dialog'
@@ -308,15 +308,15 @@ export default {
   watch: {
     // 监听树节点的变化更新树
     zNodes: function(val) {
-      this.freshArea()
+      if (val && val.length > 0) {
+        this.freshArea()
+      }
     }
   },
-  created() {
-  },
   mounted() {
-    this.freshArea()
-    this.$nextTick(function() {
-    })
+    if (this.zNodes && this.zNodes.length > 0) {
+      this.freshArea()
+    }
   },
   methods: {
     doDemotionNodes() {
@@ -346,6 +346,7 @@ export default {
             // 获取父节点
             const tempParentNode = treeNode.getParentNode()
             const parentNode = tempParentNode.getParentNode()
+            console.log(parentNode)
             //  更改有活动章节的图标
             if (parentNode.hasActivity) {
               parentNode.icon = 'static/image/activity_icon.png'
@@ -1366,35 +1367,6 @@ export default {
         this.zTree.expandNode(nodeAll[0], true, false, true)
       }
     },
-    /** 处理 返回的消息数据 */
-    handleMessBackData: function(res) {
-      const that = this
-      if (res.busitypeIndexNew === 21 && !that.isCreator && !that.isFromBookshelf) { // 获取消息主界面列表数据
-        if (res.code === 0) {
-          if (res.data.msg.ctId && localStorage.getItem('ct_id') && localStorage.getItem('ct_id') === res.data.msg.ctId) {
-            const nodes = this.zTree.getSelectedNodes()
-            if (nodes && nodes[0] && nodes[0].id && res.data.msg.chapterId && nodes[0].id === res.data.msg.chapterId) {
-              const treeNode = nodes[0]
-              const obj = {
-                id: treeNode.id,
-                pkgId: this.pkgId
-              }
-              this.$api.library.findDataDetailsContent(obj).then((res) => {
-                if (res.data) {
-                  const data = res.data
-                  this.$emit('showLibraryForm', { treeNode: treeNode, chapterId: treeNode.id, formVisible: this.formVisible, dataForm: data, rootId: this.findRootId() })
-                  const kk = this.commData(treeNode)
-                  kk.subject = res.data
-                  kk.chapterContent = res.data.chapterContent
-                  this.$emit('showLibraryRead', kk)
-                  /* loadingModal(false) */
-                }
-              })
-            }
-          }
-        }
-      }
-    },
 
     /**
      * 学员不可见章节的字体颜色
@@ -1409,20 +1381,11 @@ export default {
      * @param treeNode
      */
     addDiyDom(treeId, treeNode) {
-      /* if (this.isAuthorization) {
-        let aObj = $("#" + treeNode.tId + this.IDMark_A);
-        let editStr = "<span>--刘凯胃</span>";
-        aObj.after(editStr);
-        return false;
-      } */
       // 为根节点（课程节点）手动添加一个自定义控件
       if (treeNode.type === 'subject') {
         if (this.isClassroomDetail) {
           return false
         }
-        // if (!treeNode.hasPermission) {
-        //   return false
-        // }
         if (!treeNode.isBookCreator) {
           return false
         }

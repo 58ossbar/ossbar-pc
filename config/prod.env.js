@@ -15,7 +15,7 @@ if (process.env.env_config == 'test') {
   doMainUrl = '"https://frp.creatorblue.com"'
 }
 if (process.env.env_config == 'frp') {
-  baseUrl = '"https://frp.creatorblue.com/console/"'
+  baseUrl = '"https://frp.creatorblue.com/ossbar-stp/"'
   doMainUrl = '"https://frp.creatorblue.com"'
 }
 

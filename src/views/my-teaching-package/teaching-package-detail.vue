@@ -1,7 +1,7 @@
 <!-- 教学包的主页面 -->
 <template>
   <div class="teaching-package-box">
-    <header-nav :current-index="5"/>
+    <header-nav2 :current-index="5" :is-hide-nav-on-scroll="true"/>
     <div class="wind-1240 header-box">
       <div class="serachLibrary" >
         <label class="edit-teaching-packa-img" style="position: relative;">
@@ -68,6 +68,15 @@
               aria-selected="false"
             >活教材(<span>{{ pkgInfo.pkgResCount }}</span>)</span>
             <span
+              id="nav-contact-tab"
+              class="nav-item nav-link"
+              data-toggle="tab"
+              href="#nav-contact"
+              role="tab"
+              aria-controls="nav-contact"
+              aria-selected="false"
+            >活动库(<span>{{ pkgInfo.pkgActCount }}</span>)</span>
+            <span
               id="nav-cloud-disk"
               class="nav-item nav-link  "
               data-toggle="tab"
@@ -112,10 +121,23 @@
               :has-permission="hasPermission"
               :has-permission-actual="hasPermissionActual"
               :is-classroom-detail="false"
+              :is-hide-nav-on-scroll="true"
               :private-use="privateUse"
             />
           </div>
           <!--活教材end-->
+          <!--活动库begin-->
+          <div id="nav-contact" class="tab-pane fade" role="tabpanel" aria-labelledby="nav-contact-tab">
+            <activity-library
+              ref="activityLibraryInterface"
+              :pkg-id="pkgId"
+              :subject-id="subjectId"
+              :has-permission="hasPermission"
+              :is-classroom-detail="false"
+              @getActivityNum="handleGetaActivityNum"
+            />
+          </div>
+          <!--活动库end-->
           <!-- 发布教学包begin -->
           <div id="nav-teachingPcks" class="tab-pane fade" role="tabpanel" aria-labelledby="nav-teaching-pcks" style="width: 100%;">
             <publish-teaching-package
@@ -135,9 +157,9 @@
 <script>
 import { baseUrl } from '@/utils/global'
 import { handleImagePath } from '@/utils/util'
-import $ from '@/assets/jquery-vendor'
+import $ from '../../assets/jquery-vendor'
 import CbEditor from '@/components/cb-editor'
-import HeaderNav from '@/components/header-nav'
+import headernav2 from '@/components/header-nav-start-class'
 import CloudDisk from '@/views/teaching-center/cloud-disk'
 import RingLing from '../../components/ring-ling'
 import teachingMaterial from '@/views/my-teaching-package/teaching-material'
@@ -150,7 +172,7 @@ export default {
   name: 'TeachingPackageDetail',
   components: {
     'cb-editor': CbEditor,
-    'header-nav': HeaderNav,
+    'header-nav2': headernav2,
     'ring-ling': RingLing,
     'teaching-material': teachingMaterial,
     'activity-library': activityLibrary,

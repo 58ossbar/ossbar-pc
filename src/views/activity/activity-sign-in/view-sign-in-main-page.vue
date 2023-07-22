@@ -346,7 +346,6 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
 import Pager from '@/components/pager'
 import BrokenLine from '@/components/broken-line'
 import RingLing from '@/components/ring-ling'

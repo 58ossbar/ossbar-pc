@@ -1,244 +1,271 @@
 <!-- 投票问卷结果查看页面 -->
 <template>
-  <div class="view-trainee-answer">
-    <!-- 当前位置路径显示开始 -->
-    <div class="present-localtion">
-      <!-- 位置显示 -->
-      <div>
-        当前位置：<a class="cursor" @click="goToPageActivityList">活动</a> > <span class="present-localtion-title">{{ viewTraineeAnswerListData.activityTitle }}（结果统计）</span>
-      </div>
-      <!-- 返回操作 -->
-      <div class="classroom-back">
-        <!-- 返回图标 -->
-        <i class="fa fa-angle-left classroom-back-icon" aria-hidden="true" @click="goToPageActivityList()"/>
-        <!-- 返回文字 -->
-        <span @click="goToPageActivityList()">返回</span>
-      </div>
-    </div>
-    <!-- 当前位置路径显示结束 -->
-    <ul class="question-answer-detail-list activity-question-list">
-      <li
-        v-for="(question,questionIndex) in viewTraineeAnswerListData.questionList"
-        :key="questionIndex"
-        class="answer-detail-item question-item" >
-        <div class="topic">
-          <span class="question-num">{{ questionIndex+1 }}.</span>
-          <span class="question-type">{{ question.questionTypeName }}题</span>
-          <span class="question-con">{{ question.questionName }}</span>
-        </div>
-        <div
-          v-if="question.questionType !== '3'"
-          class="choice-question-box">
-          <div
-            v-for="(choiceOption,choiceOptionIndex) in question.children"
-            :key="choiceOptionIndex"
-            class="answer-option">
-            <div class="option-con">
-              <span class="option">{{ choiceOption.optionCode }}.</span>
-              <span>{{ choiceOption.optionName }}</span>
-            </div>
-            <div class="bottom-select-answer-detail">
-              <div class="progress">
-                <div
-                  :aria-valuenow="choiceOption.percent | filterPercent"
-                  :style="'width:'+choiceOption.percent+';'"
-                  class="progress-bar"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="100">
-                  {{ choiceOption.percent }}
-                </div>
-              </div>
-              <div class="select-answer-peoplenum">
-                <el-button v-if="choiceOption.answerInfos && choiceOption.answerInfos.length" :icon="choiceOption.isShow ? 'el-icon-arrow-up' : 'el-icon-arrow-down'" circle size="mini" style="margin-right:20px;" @click="choiceOption.isShow = !choiceOption.isShow"/>
-                <span>选择人数：</span>
-                <span>{{ choiceOption.traineeAnswerNum }}人</span>
-              </div>
-            </div>
-            <el-collapse-transition>
-              <div v-if="choiceOption.answerInfos && choiceOption.isShow" class="answer-fill">
-                <div v-for="(item,index) in choiceOption.answerInfos" :key="index" class="answer-fill-info">
-                  <el-avatar :size="30" :src="item.traineePic"/>
-                  <span style="margin-left:15px;">{{ item.traineeName }} {{ item.traineeSex }} {{ item.mobile }} </span>
-                  <div>{{ item.answerInfo }}</div>
-                </div>
-              </div>
-            </el-collapse-transition>
+    <div class="view-trainee-answer">
+      <!-- <div class="location bg-fafafa">
+        <div style="display: flex;width: 50%;">
+          <div class="localtion-title">
+            <b>当前位置:</b>
           </div>
+          <ul class="localtion-list">
+            <li class="localtion-item" style="cursor: pointer" @click="goToPageActivityList">
+              活动
+            </li>
+            <li class="localtion-item">
+              <span style="color: #959da0">{{viewTraineeAnswerListData.activityTitle}}（结果统计）</span>
+            </li>
+          </ul>
         </div>
-        <div
-          v-if="question.questionType === '3'"
-          class="short-answer-question-box">
-          <div class="unfold-btn-con">
-            <div>{{ question.traineeAnswerList.length }}人回答</div>
-            <div
-              :href="'#unfold-btn'+questionIndex"
-              :aria-controls="'unfold-btn'+questionIndex"
-              role="button"
-              data-toggle="collapse"
-              aria-expanded="false"
-              class="unfold-btn">
-              <span>查看</span>
-              <img src="static/image/teaching_center/unfold_1.png">
-            </div>
+        <div class="classroom-back">
+          <i class="fa fa-angle-left classroom-back-icon" aria-hidden="true" @click="goToPageActivityList()"></i>
+          <span @click="goToPageActivityList()">返回</span>
+        </div>
+      </div> -->
+      <!-- 当前位置路径显示开始 -->
+      <div class="present-localtion">
+          <!-- 位置显示 -->
+          <div>
+            当前位置：<a class="cursor" @click="goToPageActivityList">活动</a> > <span class="present-localtion-title">{{viewTraineeAnswerListData.activityTitle}}（结果统计）</span>
+          </div>
+          <!-- 返回操作 -->
+          <div class="classroom-back">
+              <!-- 返回图标 -->
+              <i class="fa fa-angle-left classroom-back-icon" aria-hidden="true" @click="goToPageActivityList()"></i>
+              <!-- 返回文字 -->
+              <span @click="goToPageActivityList()">返回</span>
+          </div>
+      </div>
+      <!-- 当前位置路径显示结束 -->
+      <ul class="question-answer-detail-list activity-question-list">
+        <li
+          v-for="(question,questionIndex) in viewTraineeAnswerListData.questionList"
+          :key="questionIndex"
+          class="answer-detail-item question-item" >
+          <div class="topic">
+            <span class="question-num">{{questionIndex+1}}.</span>
+            <span class="question-type">{{question.questionTypeName}}题</span>
+            <span class="question-con">{{question.questionName}}</span>
           </div>
           <div
-            v-if="question.traineeAnswerList.length>0"
-            :id="'unfold-btn'+questionIndex"
-            :class="['trainee-answer-list','collapse',questionIndex===0?'show':'']">
+            v-if="question.questionType !== '3'"
+            class="choice-question-box">
             <div
-              v-for="(traineeAnswer,traineeAnswerIndex) in question.traineeAnswerList"
-              :key="traineeAnswerIndex"
-              class="trainee-answer-item">
-              <div class="trainee-answer-info">
-                <img :src="traineeAnswer.traineePic">
-                <div class="right-trainee-answer">
-                  <span>{{ traineeAnswer.traineeName + ' ' + traineeAnswer.traineeSex + ' ' + traineeAnswer.mobile }}</span>
-                  <span class="colon">：</span>
-                  <span style="word-break:break-all;">{{ traineeAnswer.content }}</span>
+              class="answer-option"
+              :key="choiceOptionIndex"
+              v-for="(choiceOption,choiceOptionIndex) in question.children">
+              <div class="option-con">
+                <span class="option">{{choiceOption.optionCode}}.</span>
+                <span>{{choiceOption.optionName}}</span>
+              </div>
+              <div class="bottom-select-answer-detail">
+                <div class="progress">
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    :aria-valuenow="choiceOption.percent | filterPercent"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    :style="'width:'+choiceOption.percent+';'">
+                    {{choiceOption.percent}}
+                  </div>
+                </div>
+                <div class="select-answer-peoplenum">
+                  <el-button v-if="choiceOption.answerInfos && choiceOption.answerInfos.length" :icon="choiceOption.isShow ? 'el-icon-arrow-up' : 'el-icon-arrow-down'" circle size="mini" @click="choiceOption.isShow = !choiceOption.isShow" style="margin-right:20px;"></el-button>
+                  <span>选择人数：</span>
+                  <span>{{choiceOption.traineeAnswerNum}}人</span>
                 </div>
               </div>
+              <el-collapse-transition>
+              <div class="answer-fill" v-if="choiceOption.answerInfos && choiceOption.isShow">
+                <div class="answer-fill-info" v-for="(item,index) in choiceOption.answerInfos" :key="index">
+                  <el-avatar :size="30" :src="item.traineePic"></el-avatar>
+                  <span style="margin-left:15px;">{{item.traineeName}} {{item.traineeSex}} {{item.mobile}} </span>
+                  <div>{{item.answerInfo}}</div>
+                </div>
+              </div>
+              </el-collapse-transition>
+            </div>
+          </div>
+          <div
+            v-if="question.questionType === '3'"
+            class="short-answer-question-box">
+            <div class="unfold-btn-con">
+              <div>{{question.traineeAnswerList.length}}人回答</div>
               <div
-                v-if="traineeAnswer.fileList.length>0"
-                class="accessory-box accessory-detail">
-                <div class="accessory-title">
-                  附件:
+                role="button"
+                data-toggle="collapse"
+                :href="'#unfold-btn'+questionIndex"
+                aria-expanded="false"
+                :aria-controls="'unfold-btn'+questionIndex"
+                class="unfold-btn">
+                <span>查看</span>
+                <img src="static/image/teaching_center/unfold_1.png">
+              </div>
+            </div>
+            <div
+              :id="'unfold-btn'+questionIndex"
+              v-if="question.traineeAnswerList.length>0"
+              :class="['trainee-answer-list','collapse',questionIndex===0?'show':'']">
+              <div
+                v-for="(traineeAnswer,traineeAnswerIndex) in question.traineeAnswerList"
+                :key="traineeAnswerIndex"
+                class="trainee-answer-item">
+                <div class="trainee-answer-info">
+                  <img :src="traineeAnswer.traineePic">
+                  <div class="right-trainee-answer">
+                    <span>{{traineeAnswer.traineeName + ' ' + traineeAnswer.traineeSex + ' ' + traineeAnswer.mobile}}</span>
+                    <span class="colon">：</span>
+                    <span style="word-break:break-all;">{{traineeAnswer.content}}</span>
+                  </div>
                 </div>
-                <ul class="accessory-list">
-                  <li
-                    v-for="(file,fileIndex) in traineeAnswer.fileList"
-                    :key="fileIndex"
-                    class="accessory-item">
-                    <viewer v-if="file.type==='image'" class="accessory-viewer" >
-                      <img :src="file.url" style="width: 40px;height: 40px" alt>
-                    </viewer>
-                    <!-- <img
+                <div
+                  class="accessory-box accessory-detail"
+                  v-if="traineeAnswer.fileList.length>0">
+                  <div class="accessory-title">
+                    附件:
+                  </div>
+                  <ul class="accessory-list">
+                    <li
+                      class="accessory-item"
+                      :key="fileIndex"
+                      v-for="(file,fileIndex) in traineeAnswer.fileList">
+                      <viewer class="accessory-viewer"  v-if="file.type==='image'"  >
+                        <img style="width: 40px;height: 40px" :src="file.url"  alt>
+                      </viewer>
+                      <!-- <img
                           v-if="file.type==='image'"
                           :src="file.url"
                           alt="附件"
                           title="附件"> -->
-                    <video
-                      v-if="file.type==='video'"
-                      :src="file.url"
-                      @click="openVideo(file.url)"/>
-                  </li>
-                </ul>
-              </div>
-              <div class="trainee-answer-time">
-                {{ traineeAnswer.createTime }}
+                      <video
+                        v-if="file.type==='video'"
+                        @click="openVideo(file.url)"
+                        :src="file.url">
+                      </video>
+                    </li>
+                  </ul>
+                </div>
+                <div class="trainee-answer-time">
+                  {{traineeAnswer.createTime}}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </li>
-    </ul>
-  </div>
+        </li>
+      </ul>
+    </div>
 </template>
 
 <script>
-import {
-  baseUrl
-} from '@/utils/global'
-export default {
-  name: 'ViewTraineeAnswer',
-  filters: {
-    filterAnswerSetText(value) {
-      return value === 'N' ? '设为正确答案' : '正确答案'
-    },
-    filterPercent(value) {
-      return value.split('.')[0]
-    },
-    filterQuestionType(value) {
-      if (value === '3') {
-        return '简答题'
-      } else if (value === '2') {
-        return '多选题'
-      } else {
-        return '单选题'
-      }
-    }
-  },
-  props: {
-    activityInfo: {
-      type: Object,
-      required: true
-    },
-    ctId: {
-      type: String,
-      required: true
-    }
-  },
-  data() {
-    return {
-      // 查看学员针对投票/问卷的作答内容
-      viewTraineeAnswerListData: {
-        activityTitle: '',
-        submitTheNumber: 0, // 提交人数
-        questionList: [] // 题目列表
-      }
-    }
-  },
-  created() {
-    // 查看学员针对投票/问卷的作答内容
-    this.getViewTraineeAnswerListData(this.activityInfo.activityId)
-  },
-  methods: {
-    // 返回到活动主页面
-    goToPageActivityList() {
-      // 与父组件通讯,传值为false时, 表示不显示这个新增修改页面，显示主列表页面
-      this.$parent.changeVotoQuestionnairePage(false)
-    },
-    // 视频预览
-    openVideo(url) {
-      this.$videoPreview(url)
-    },
-    // 查看学员针对投票/问卷的作答内容
-    getViewTraineeAnswerListData(activityId) {
-      const obj = {
-        ctId: this.ctId,
-        activityId: activityId
-      }
-      this.$api.activityVoteQuestionnaire.viewTraineeAnswerListData(obj).then(res => {
-        if (res.code === 0) {
-          this.viewTraineeAnswerListData.activityTitle = res.activityInfo.activityTitle
-          this.viewTraineeAnswerListData.submitTheNumber = res.activityInfo.submitTheNumber
-          if (res.data.list && res.data.list.length > 0) {
-            const questionList = res.data.list
-            for (let i = 0; i < questionList.length; i++) {
-              if (questionList[i].questionType == '3' && questionList[i].traineeAnswerList && questionList[i].traineeAnswerList.length > 0) {
-                const traineeAnswerList = questionList[i].traineeAnswerList
-                for (let j = 0; j < traineeAnswerList.length; j++) {
-                  if (traineeAnswerList[j].traineePic.indexOf('http') === -1) {
-                    traineeAnswerList[j].traineePic = baseUrl + traineeAnswerList[j].traineePic
-                  }
-                  if (traineeAnswerList[j].fileList.length > 0) {
-                    const fileList = traineeAnswerList[j].fileList
-                    for (let fileIndex = 0; fileIndex < fileList.length; fileIndex++) {
-                      fileList[fileIndex].url = baseUrl + fileList[fileIndex].url
-                    }
-                  }
-                }
-              } else {
-                if (questionList[i].children) {
-                  questionList[i].children.map(item => {
-                    if (item.answerInfos) {
-                      item.isShow = false
-                      item.answerInfos.forEach(value => {
-                        if (!value.traineePic.includes('http://') && !value.traineePic.includes('https://')) { value.traineePic = baseUrl + value.traineePic }
-                      })
-                    }
-                    return item
-                  })
-                }
+  import {
+    baseUrl,
+    toast,
+    alert,
+    confirm,
+    loadingModal,
+    formVaildStyle,
+    formInVaildStyle
+  }from '@/utils/global'
+  export default {
+        name: "view-trainee-answer",
+        props: {
+            activityInfo : {
+                type: Object,
+                required: true,
+            },
+            ctId: {
+                type: String,
+                required: true,
+            },
+        },
+        data(){
+            return{
+                //查看学员针对投票/问卷的作答内容
+                viewTraineeAnswerListData:{
+                  activityTitle:'',
+                  submitTheNumber:0,//提交人数
+                  questionList:[] //题目列表
+                },
+            }
+        },
+        filters:{
+            filterAnswerSetText(value){
+              return value==='N'?'设为正确答案':'正确答案';
+            },
+            filterPercent(value){
+              return value.split('.')[0];
+            },
+            filterQuestionType(value){
+              if(value==='3'){
+                return '简答题';
+              }else if(value==='2'){
+                return '多选题';
+              }else{
+                return '单选题';
               }
             }
-            this.viewTraineeAnswerListData.questionList = res.data.list
-          }
-        }
-      })
+        },
+        methods: {
+            //返回到活动主页面
+            goToPageActivityList () {
+              // 与父组件通讯,传值为false时, 表示不显示这个新增修改页面，显示主列表页面
+              this.$parent.changeVotoQuestionnairePage(false);
+            },
+            // 视频预览
+            openVideo(url) {
+              this.$videoPreview(url)
+            },
+            //查看学员针对投票/问卷的作答内容
+            getViewTraineeAnswerListData(activityId){
+              let obj={
+                ctId:this.ctId,
+                activityId:activityId
+              }
+              this.$api.activityVoteQuestionnaire.viewTraineeAnswerListData(obj).then(res=>{
+                if(res.code===0){
+                  this.viewTraineeAnswerListData.activityTitle=res.activityInfo.activityTitle;
+                  this.viewTraineeAnswerListData.submitTheNumber=res.activityInfo.submitTheNumber;
+                  if(res.data.list && res.data.list.length > 0){
+                    let questionList = res.data.list;
+                    for(let i=0;i<questionList.length;i++){
+                      if(questionList[i].questionType == '3' && questionList[i].traineeAnswerList && questionList[i].traineeAnswerList.length > 0){
+                        let traineeAnswerList = questionList[i].traineeAnswerList;
+                        for(let j=0;j<traineeAnswerList.length;j++){
+                          if(traineeAnswerList[j].traineePic.indexOf('http') === -1){
+                            traineeAnswerList[j].traineePic = baseUrl + traineeAnswerList[j].traineePic;
+                          }
+                          if(traineeAnswerList[j].fileList.length>0){
+                            let fileList=traineeAnswerList[j].fileList;
+                            for(let fileIndex=0;fileIndex<fileList.length;fileIndex++){
+                              fileList[fileIndex].url = baseUrl +  fileList[fileIndex].url;
+                            }
+                          }
+                        }
+                      }else{
+                        if (questionList[i].children) {
+                            questionList[i].children.map(item => {
+                            if (item.answerInfos) {
+                              item.isShow = false;
+                              item.answerInfos.forEach(value => {
+                                if(!value.traineePic.includes('http://') && !value.traineePic.includes('https://'))
+                                value.traineePic = baseUrl + value.traineePic;
+                              })
+                            }
+                            return item;
+                          })
+                        }
+                      }
+                    }
+                    this.viewTraineeAnswerListData.questionList = res.data.list;
+                  }
+                }
+              })
+            },
+        },
+        created () {
+            //查看学员针对投票/问卷的作答内容
+            this.getViewTraineeAnswerListData(this.activityInfo.activityId);
+        },
     }
-  }
-}
 </script>
 
 <style scoped>

@@ -58,9 +58,11 @@
 </template>
 
 <script>
+import HeaderNav from '@/components/header-nav'
 export default {
   name: 'FooterNav',
   components: {
+    'header-nav': HeaderNav
   },
   data() {
     return {

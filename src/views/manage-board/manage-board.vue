@@ -4,6 +4,28 @@
     <div class="begin-class-con wind-1240">
       <div class="left-function color-000">
         <h2 class="user-name">{{ getTimeGreat }}，{{ basicInfo.traineeName }}</h2>
+        <div class="news">
+          <!--<p class="title">您有{{msgNum}}条消息</p>-->
+          <div class="news-con">
+            <img src="static/image/info_1.png" alt="消息">
+            <div class="carousel">
+              <ul
+                :class="{animate_top:animate}"
+                class="news-list">
+                <li
+                  v-for="(listNew,index) in listNews"
+                  :data-id="listNew.categoryId"
+                  :key="index"
+                  style="cursor: pointer"
+                  @click="toNewsread(listNew.newsid)">{{ listNew.newTitle }}</li>
+              </ul>
+            </div>
+            <div class="detail" @click="getAllNews">
+              <span>了解更多</span>
+              <img src="static/image/arrow_1.png" alt="">
+            </div>
+          </div>
+        </div>
         <div class="entrance">
           <p class="title">常用入口</p>
           <ul class="entrance-list">
@@ -34,7 +56,7 @@
                 <div class="entrance-item-label-dec hide_double">加入其他老师课堂，进行学习</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleBlog">
               <img src="static/image/manage_board/blog.png" alt="我的博客">
               <!-- <span>我的博客</span> -->
 
@@ -43,7 +65,7 @@
                 <div class="entrance-item-label-dec hide_double">记录教学点滴、分享技术碎片</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleFjVideo">
               <img src="static/image/teaching_package/video.png" alt="辅教视频">
               <!-- <span>辅教视频库</span> -->
 
@@ -52,7 +74,7 @@
                 <div class="entrance-item-label-dec hide_double">上传教学微视频、活跃课堂</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleMySchedule">
               <img src="static/image/manage_board/schedule.png" alt="我的课表">
               <!-- <span>我的课表</span> -->
 
@@ -61,7 +83,7 @@
                 <div class="entrance-item-label-dec hide_double">查看教学计划安排</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleAttendance">
               <img src="static/image/manage_board/certificate.png" alt="学生成绩">
               <!-- <span>学生成绩</span> -->
 
@@ -90,9 +112,9 @@
           <div class="right-user-info">
             <p>姓名：{{ basicInfo.traineeName }}</p>
             <p>昵称：{{ basicInfo.nickName }}</p>
-            <p v-if="ifTeacher">教师证：{{ basicInfo.teacherErtificateNumber }}</p>
-            <p v-if="ifTeacher">职称：{{ basicInfo.teacherPostName }}</p>
-            <p v-if="ifTeacher">主攻科目：{{ basicInfo.mainSubjects }}</p>
+            <p v-if="isTeacher">教师证：{{ basicInfo.teacherErtificateNumber }}</p>
+            <p v-if="isTeacher">职称：{{ basicInfo.teacherPostName }}</p>
+            <p v-if="isTeacher">主攻科目：{{ basicInfo.mainSubjects }}</p>
             <p>工号/学号：{{ basicInfo.jobNumber }}</p>
             <p>所在学校：{{ basicInfo.school }}</p>
             <p>所在院系：{{ basicInfo.college }}</p>
@@ -163,7 +185,7 @@
                 :value="item.id"/>
             </el-select>
           </div>
-          <div v-if="ifTeacher" class="group-form">
+          <div v-if="isTeacher" class="group-form">
             <div class="group-name">
               教师证
               <span>*</span>
@@ -269,20 +291,21 @@
 </template>
 
 <script>
-import Cookies from 'js-cookie'
 import $ from '@/assets/jquery-vendor'
 import ModalDialog from '@/components/modal-dialog'
-import { baseUrl, toast, formVaildStyle, formInVaildStyle, tokenKeyName } from '@/utils/global'
+import { baseUrl, toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
 export default {
   components: {
     'modal-dialog': ModalDialog
   },
   data() {
     return {
-      showLogin: true,
       isShowBtn: false, // 编辑按钮是否显示文字
       basicInfo: {}, // 基本信息
       charmInfo: {}, // 魅力值信息
+      msgNum: 0, // 信息数
+      listNews: [], // 新闻条数
+      animate: false, // 控制动画
       oldEditInfo: {},
       editInfo: {
         traineeName: '',
@@ -297,7 +320,7 @@ export default {
       teacherNameState: null,
       teacherPic: '',
       isEditPic: false, // 是否编辑头像
-      ifTeacher: false,
+      isTeacher: false,
       traineeSexList: [{ id: 0, value: '保密' }, { id: 1, value: '男' }, { id: 2, value: '女' }],
       password: {
         originalPassword: '',
@@ -318,24 +341,18 @@ export default {
     }
   },
   created() {
+    // 获取个人信息
+    this.getPersonalInfo()
+    // 获取消息数
+    this.getMsgNum()
+    // 获取滚动新闻
+    this.getListNews()
+    setInterval(this.scroll, 3000)
   },
   mounted() {
-    const token = Cookies.get(tokenKeyName)
-    console.log(token, tokenKeyName)
-    if (token) {
-      this.showLogin = false
-      // 获取个人信息
-      this.getPersonalInfo()
-    } else {
-       this.showLogin = true
-      this.$router.push('/login')
-    }
+
   },
   methods: {
-    toLogin() {
-      localStorage.setItem('toLoginUrl', window.location.href)
-      this.$router.push('/login')
-    },
     handleShowBtn(value) {
       this.isShowBtn = value
     },
@@ -346,31 +363,35 @@ export default {
       $('#edit-user-box').modal('show')
     },
     handleTeachingPackage() {
-      if (this.showLogin) {
-        this.toLogin()
-        return false
-      }
       this.$router.push({
         path: '/my-teaching-package'
       })
     },
     handleTeachClass() {
-      if (this.showLogin) {
-        this.toLogin()
-        return false
-      }
       this.$router.push({
         path: `/my/classroom`
       })
     },
+    handleFjVideo() {
+      this.$router.push({
+        path: `/auxiliary-teaching-video/auxiliary-teaching-video-home`
+      })
+    },
     handleLearningClass() {
-      if (this.showLogin) {
-        this.toLogin()
-        return false
-      }
       this.$router.push({
         path: `/my/learning-classroom`
       })
+    },
+    handleMySchedule() {
+      this.$router.push('/my-schedule')
+    },
+    handleAttendance() {
+      this.$router.push('/student-score')
+    },
+    handleMessaging() {
+      toast('小猿正在努力赶工中...')
+      return false
+      // this.$router.push('/messaging/messaging')
     },
     // 点击上传图片
     changeImage(e) {
@@ -419,7 +440,7 @@ export default {
       $('#nickName').removeAttr('style')
       formVaildStyle('.nickNameHint', '#nickName')
 
-      if (this.ifTeacher) {
+      if (this.isTeacher) {
         if ((!this.editInfo.teacherErtificateNumber) || (this.editInfo.teacherErtificateNumber.length !== 17)) {
           formInVaildStyle('.teacherErtificateNumberHint', '#teacherErtificateNumber')
           $('#teacherErtificateNumber').css('borderColor', '#dc3545')
@@ -471,11 +492,20 @@ export default {
           formData.append('nickName', this.editInfo.nickName)
           formData.append('traineeSex', this.editInfo.traineeSex)
           formData.append('email', this.editInfo.email)
-          if (this.ifTeacher) {
+          if (this.isTeacher) {
             formData.append('teacherErtificateNumber', this.editInfo.teacherErtificateNumber)
           }
           formData.append('jobNumber', this.editInfo.jobNumber)
         }
+        /* let dataObj = {
+                    teacherName: this.editInfo.traineeName,
+                    traineeSex: this.editInfo.traineeSex,
+                    email: this.editInfo.email,
+                    jobNumber: this.editInfo.jobNumber
+                  }
+                  if (this.isTeacher){
+                    dataObj.teacherErtificateNumber = this.editInfo.teacherErtificateNumber
+                  }*/
         this.clearValidate()
         $('#edit-user-box').modal('hide')
         this.$api.managementPanel.saveInfo(formData).then((res) => {
@@ -493,6 +523,25 @@ export default {
       this.clearValidate()
       $('#edit-user-box').modal('hide')
       this.editInfo = this.oldEditInfo
+    },
+    // 跳转我的博客页面
+    handleBlog() {
+      localStorage.setItem('isEditBlog', true)
+      this.$router.push('/blog')
+    },
+    // 新闻滚动
+    scroll() {
+      this.animate = true
+      setTimeout(() => {
+        this.listNews.push(this.listNews[0])
+        this.listNews.shift()
+        this.animate = false
+      }, 500)
+    },
+    // 新闻单个的详细页
+    toNewsread: function(box) {
+      localStorage.setItem('newsid', box)
+      this.$router.push('/news-read')
     },
     // 获取个人信息
     getPersonalInfo() {
@@ -518,13 +567,43 @@ export default {
             this.editInfo.jobNumber = res.data.basicInfo.jobNumber
             this.basicInfo = res.data.basicInfo
             this.charmInfo = res.data.charmInfo
-            this.ifTeacher = res.ifTeacher
+            this.isTeacher = res.isTeacher
             if (res.data.basicInfo.traineeSex) {
               this.editInfo.traineeSex = parseInt(res.data.basicInfo.traineeSex)
             }
           }
         }
       })
+    },
+    // 获取消息数
+    getMsgNum() {
+      this.$api.managementPanel.getMsgNum().then((res) => {
+        if (res.code === 0) {
+          this.msgNum = res.data
+        }
+      })
+    },
+    // 获取滚动新闻
+    getListNews() {
+      this.$api.managementPanel.listNews().then((res) => {
+        if (res.code === 0) {
+          if (res.data && res.data.length > 0) {
+            this.listNews = res.data
+          }
+        }
+      })
+    },
+    // 到所有新闻显示页面
+    getAllNews() {
+      let categoryId = ''
+      const ele = document.querySelector('.news-list')
+      if (ele) {
+        const lis = ele.querySelectorAll('li')
+        if (lis && lis[0]) {
+          categoryId = lis[0].getAttribute('data-id')
+        }
+      }
+      this.$router.push('/news-list?categoryId=' + categoryId)
     },
     /**
              * 修改密码
@@ -624,6 +703,14 @@ export default {
     .header-image label{
       display: inline-block;
     }
+    .news-info-btn-list{
+        margin-top:10px;
+        text-align: center;
+    }
+    .news-info-btn-list button{
+        width: 100px;
+        margin-right:10px;
+    }
     .group-form{
         display:flex;
         align-items: center;
@@ -656,14 +743,70 @@ export default {
     .begin-class-con .left-function .user-name{
         font-size:22px;
     }
+    .begin-class-con .left-function .news{
+        margin-top:20px;
+    }
+    .left-function .news .news-con{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        height:100px;
+        padding: 20px;
+        margin-top:10px;
+        border-radius: 5px;
+        background-color: #f2f6fa;
+    }
+    .left-function .news .news-con >img{
+        width:32px;
+        height:32px;
+    }
+    .left-function .news .news-con .carousel{
+        width: 75%;
+        height:100%;
+        overflow: hidden;
+    }
+   .news .news-con .carousel .news-list{
+        width: 100%;
+        height: 100%;
+        color: #8d949c;
+    }
+    .news .news-con .carousel .news-list{
+        width: 100%;
+        height: 60px;
+        line-height:60px;
+        padding-left:20px;
+    }
+    .news .news-con .carousel .animate_top {
+        transition: all 1s;
+        margin-top: -60px
+    }
+    .news .news-con .carousel .news-list >li{
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .left-function .news .news-con .detail{
+        color: #6e98db;
+        font-weight:600;
+        cursor: pointer;
+    }
+    .left-function .news .news-con .detail span{
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .left-function .news .news-con .detail >img{
+        width: 20px;
+        height: 20px;
+    }
     .entrance{
         width: 100%;
-        margin-top:15px;
-        border-top: 2px solid #e6e8ea;
+        margin-top:10px;
+        /*border-top: 2px solid #e6e8ea;*/
+        border: none;
     }
     .entrance .title{
         padding: 10px 0;
-        margin-top: 20px;
     }
     .entrance .entrance-list{
         display: flex;

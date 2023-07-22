@@ -98,6 +98,15 @@
               <div class="form-item">
                 <div class="input-hint">上课班级<span class="color-d81e06">*</span></div>
                 <div class="input-box">
+                  <!-- <vm-select
+                                    id="classId"
+                                    ref="typeSelect"
+                                    :disabled="isEdit"
+                                    :options="classList"
+                                    :title="title"
+                                    v-if="isSelect"
+                                    @input="handleSelectedClassssResult"
+                                    ></vm-select> -->
 
                   <el-select
                     id="classId"
@@ -252,11 +261,13 @@
 <script>
 import $ from '@/assets/jquery-vendor'
 import { baseUrl, toast, formVaildStyle, formInVaildStyle, loadingModal } from '@/utils/global'
-import HeaderNav from '@/components/header-nav'
+import HeaderNav from '@/components/header-nav-start-class'
+import SelectPacker from '@/components/select-packer'
 export default {
   name: 'AddClassroom',
   components: {
-    'header-nav': HeaderNav
+    'header-nav': HeaderNav,
+    'vm-select': SelectPacker
   },
   data() {
     return {
@@ -287,9 +298,26 @@ export default {
     }
   },
   created() {
+    /* if ('true' === this.isEdit){
+              this.dataForm = this.$route.query.classroom;
+              this.showClassList();
+            } */
     this.showClassroomData()
   },
   mounted() {
+    // this.$api.login.checkIsLogin().then((res) => {
+    //   if (res.code == 0) {
+    //     if (res.data.isTeacher) {
+    //       this.$router.push("/my/add-classroom");
+    //     } else {
+    //       this.$router.push("/");
+    //     }
+    //   } else {
+    //     cbalert.alert(res.msg, () => {
+    //       this.$router.push("/login");
+    //     })
+    //   }
+    // })
     if (this.isEdit) {
       const obj = this.$route.query.classroom
       this.$api.classroom.viewClassroomBaseInfo({ ctId: obj.ctId }).then(res => {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header-nav :current-index="5"/>
+    <header-nav2 :current-index="5"/>
     <div class="test-question-bank-nav test-question-bank-nav2 wind-1240 ">
       <div class="location">
         <div class="localtion-title"><b>当前位置:</b></div>
@@ -65,8 +65,23 @@
                 </el-input>
               </div>
             </el-form-item>
+            <!-- <el-form-item>
+              <el-button type="primary" @click="saveChapter('dataForm')">保存</el-button>
+              <el-button @click="resetForm('dataForm')">重置</el-button>
+            </el-form-item> -->
           </el-form>
           <el-button type="primary" size="small" icon="el-icon-s-platform" class="teacher-right-list-save" @click="saveChapter('dataForm')">保存</el-button>
+
+          <!-- <div class="teacher-right-list-wrap">
+            <div v-for="(item1, index1) in chapterNameList" :key="index1" class="teacher-right-list-item">
+              <el-input v-model="item1.name" placeholder="请输入章节名称">
+                <template slot="append">
+                  <el-button icon="el-icon-plus" class="teacher-right-list-add" @click="toAdd(index1)"/>
+                  <el-button icon="el-icon-close" @click="toDel(index1)"/>
+                </template>
+              </el-input>
+            </div>
+          </div> -->
 
         </template>
         <div v-else-if="!isCanAdd" class="teacher-right-empty">当前最多三级节点，请选择其他节点！</div>
@@ -97,6 +112,10 @@
                   </template>
                 </el-input>
               </el-form-item>
+              <!-- <el-form-item>
+                <el-button type="primary" @click="saveChapter('dataForm')">保存</el-button>
+                <el-button @click="resetForm('dataForm')">重置</el-button>
+              </el-form-item> -->
             </el-form>
             <el-button :loading="loading" type="primary" size="small" icon="el-icon-s-platform" class="teacher-right-list-save" @click="saveChapter('dataForm')">保存</el-button>
           </div>
@@ -110,17 +129,19 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
+import $ from 'jquery'
 import { toast } from '@/utils/global'
 // 引入头部导航页面
-import HeaderNav from '@/components/header-nav'
+import HeaderNavStartClass from '@/components/header-nav-start-class'
 // 引入树插件页面
-import CbTree from '@/components/cb-tree'
+import CbTree from '@/components/cb-tree/index'
+import ZtreeLibrary from '@/components/ztree-library'
 export default {
   name: 'BatchSaveChapter',
   components: {
-    'header-nav': HeaderNav,
-    CbTree
+    'header-nav2': HeaderNavStartClass,
+    CbTree,
+    ZtreeLibrary
   },
   data() {
     return {
@@ -137,7 +158,8 @@ export default {
       isClassroomDetail: false,
       ztree: $.fn.zTree.getZTreeObj('authorizationTree'),
       treeObj: $.fn.zTree.getZTreeObj('treeDemo'), // 树节点的对象
-      treeData: [] // 章节显示数据
+      treeData: [], // 章节显示数据
+      authorizationTreeData: []
     }
   },
   created() {
@@ -291,6 +313,7 @@ export default {
     text-align: center;
     display: flex;
     height: calc(100vh - 50px - 101px - 10px);
+    min-height: 400px;
   }
 
   .select-info{

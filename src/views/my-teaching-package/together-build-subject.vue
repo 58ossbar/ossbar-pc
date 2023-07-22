@@ -2,7 +2,7 @@
 <template>
   <div class="teaching-package-box">
     <!--导航栏-->
-    <header-nav :current-index="5"/>
+    <headernav2 :current-index="5" :is-hide-nav-on-scroll="true"/>
     <!--头部信息begin-->
     <div class="wind-1240 header-box">
       <div class="serachLibrary" >
@@ -73,6 +73,7 @@
               :subject-id="subjectId"
               :has-permission="hasPermission"
               :is-classroom-detail="false"
+              :is-hide-nav-on-scroll="true"
               :has-permission-actual="hasPermissionActual"
             />
           </div>
@@ -85,13 +86,13 @@
 </template>
 
 <script>
-import HeaderNav from '@/components/header-nav'
+import Headernav2 from '@/components/header-nav-start-class'
 import { baseUrl } from '@/utils/global'
 import TeachingMaterial from './teaching-material'
 export default {
   name: 'TogetherBuildSubject',
   components: {
-    HeaderNav,
+    Headernav2,
     TeachingMaterial
   },
   prop: {},
@@ -121,6 +122,15 @@ export default {
   computed: {},
   watch: {},
   created() {
+    /* console.log(this.$store.state.pkg)
+      this.pkgId = this.$store.state.pkg.pkgId*/
+    /* if (this.$route.params) {
+        let data = Object.assign({}, this.$route.params)
+        if (data) {
+          this.pkgId = data.pkgId
+          this.viewPkgInfo()
+        }
+      }*/
     this.pkgId = localStorage.getItem(this.constant.PKG_ID_FOR_TOGETHER_BUILD)
     this.subjectId = localStorage.getItem(this.constant.PKG_ID_SUBJECT_FOR_TOGETHER_BUILD)
     this.viewPkgInfo()

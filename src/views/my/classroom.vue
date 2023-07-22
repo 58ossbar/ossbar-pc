@@ -45,11 +45,43 @@
           style="width:20%;margin-left:2%;"
           clearable
           @keyup.enter.native="toGetClassList"/>
+        <!--<el-input
+          size="medium"
+          placeholder="请输入课程名称"
+          v-model="subjectName"
+          @keyup.enter.native="toGetClassList"
+          style="width:20%;margin-left:2%;"
+          clearable>
+        </el-input>-->
+        <!-- <el-input
+          placeholder="请输入年份"
+          v-model="year"
+          @keyup.enter.native="getClassList"
+          style="width:20%;margin-left:2%;"
+          clearable>
+        </el-input> -->
         <el-button type="primary" icon="el-icon-search" style="margin-left:2%;" size="medium" @click="toGetClassList">搜索</el-button>
       </div>
 
     </div>
     <div class="classroom-all">
+      <!-- <div class="display-flex">
+            <div class="location">
+                <div class="localtion-title"><b>当前位置:</b></div>
+                <ul class="localtion-list">
+                    <li class="localtion-item" @click="toback()" style="cursor: pointer">
+                        管理看板
+                    </li>
+                    <li class="localtion-item">
+                       <span style="color: #959da0">{{type}}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="classroom-back">
+                <i class="fa fa-angle-left classroom-back-icon" aria-hidden="true" @click="toback()"></i>
+                <span @click="toback()">返回</span>
+            </div>
+        </div> -->
       <div class="classroom-area area-border">
         <img title="新建课堂" src="../../../static/image/addClassromm.png" class="to-add-classroom" @click="toaddclassroom()">
         <div style="color: #959da0">新建课堂</div>
@@ -61,15 +93,29 @@
         <div class="teaching-one-room" style="border-radius: 10px 10px 0px 0px;" @click="toClassroomDetails(item)">
           <div style="overflow: hidden;position: relative;border-top-right-radius: 10px;">
             <img :src="item.pic" class="classroom-img">
-            <div :class="['classroom-state',item.classroomStateBg]"/>
+            <div :class="['classroom-state',item.classroomStateBg]">
+              <!-- <img v-if="item.classroomState==='2'" src="static/image/teaching_package/state.gif" alt="">
+                      <span>{{item.classroomStateName}}</span> -->
+            </div>
 
             <div class="classroom-state-title">
+              <!-- <div style="margin-right:2px;" v-if="item.classroomState==='2'">
+                        <img src="static/image/teaching_package/state.gif" alt="">
+                      </div> -->
               <span>{{ item.classroomStateName }}</span>
             </div>
             <div v-if="item.ifLiveLesson === 'Y'" class="classroom-live-title classroom-live">
               <span>直播课</span>
             </div>
           </div>
+          <!-- <div class="classroom-area-number">
+                    <div class="classroom-area-nums">
+                        <span>活动（<span>{{item.pkgActCount}}</span>）</span>
+                    </div>
+                    <div class="classroom-area-nums">
+                        <span>资源（<span>{{item.pkgResCount}}</span>）</span>
+                    </div>
+                </div> -->
 
           <div class="module_info">
             <div style="display: flex; justify-content: space-between">
@@ -112,6 +158,7 @@
                     <el-dropdown-item v-if="item.classroomState === '2'" :command="beforeHandleCommand(3,item)" icon="el-icon-video-pause">结束</el-dropdown-item>
                     <el-dropdown-item v-if="item.classroomState === '1'" :command="beforeHandleCommand(4,item)" icon="el-icon-delete">删除</el-dropdown-item>
                     <el-dropdown-item v-if="item.ifLiveLesson === 'Y'" :command="beforeHandleCommand(5,item)" icon="el-icon-delete">进入直播</el-dropdown-item>
+                    <el-dropdown-item :command="beforeHandleCommand(6, item)" icon="el-icon-position">{{ item.isTop ? '取消置顶' : '置顶' }}</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
                 <!-- <div
@@ -157,9 +204,9 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
+import $ from 'jquery'
 import { baseUrl, confirm, toast } from '@/utils/global'
-import HeaderNav from '@/components/header-nav'
+import HeaderNav from '@/components/header-nav-start-class'
 import Pager from '@/components/pager'
 
 export default {
@@ -214,7 +261,7 @@ export default {
          * 返回
          */
     toback: function() {
-      this.$router.push('/')
+      this.$router.push('/begin-class')
     },
 
     /**
@@ -243,7 +290,21 @@ export default {
       } else if (command.command === 5) {
         console.log(command.item.linkUrl)
         window.open(command.item.linkUrl, '_blank')
+      } else if (command.command === 6) {
+        this.setTop(command.item)
       }
+    },
+
+    setTop(item) {
+      const formData = new FormData()
+      formData.append('ctId', item.ctId)
+      formData.append('value', item.isTop ? 'N' : 'Y')
+      this.$api.classroom.setTop(formData).then(res => {
+        if (res.code === 0) {
+          toast(res.msg)
+          this.getClassList()
+        }
+      })
     },
 
     /**
@@ -416,8 +477,8 @@ export default {
          * 点击开设课堂
          */
     toaddclassroom: function() {
-      const ifTeacher = localStorage.getItem('ifTeacher')
-      if (ifTeacher !== 'Y') {
+      const isTeacher = localStorage.getItem('isTeacher')
+      if (isTeacher !== 'Y') {
         toast('还未开通新建【课堂】授权，请联系管理员！')
         return false
       }
@@ -625,6 +686,14 @@ html,body{
     height: 30px;
     line-height: 30px;
     width: 50px;
+  }
+  .class-name{
+    font-size: 16px;
+    overflow: hidden;
+    padding: 7px 15px 7px 0;
+    height: 30px;
+    line-height: 30px;
+    width: 50%;
   }
   /* 活动数、资源数 */
   .classroom-area-number {

@@ -1,21 +1,15 @@
 <!-- 统计图组件 -->
 <template>
-  <div
-    :id="id"
-    :style="'width:'+ width+';height:'+height+';'"/>
+    <div :id="id"
+        :style="'width:'+ width+';height:'+height+';'">
+    </div>
 </template>
 
 <script>
 import echarts from 'echarts'
 export default {
-  name: 'BrokenLine',
-  components: {
-  },
   props: {
-    id: {
-      type: String,
-      default: ''
-    },
+    id: String,
     height: {
       type: String,
       default: '170px'
@@ -26,7 +20,7 @@ export default {
     },
     dataInfo: {
       type: Object,
-      default: function() {
+      default: function () {
         return {
           title: '',
           xAxisArr: [],
@@ -35,7 +29,7 @@ export default {
       }
     }
   },
-  data() {
+  data () {
     return {
       option1: {
         title: {
@@ -73,25 +67,36 @@ export default {
           }
         ],
         series: this.dataInfo.seriesArr
+        // [
+        //   {
+        //     name: '出勤率',
+        //     type: 'line',
+        //     stack: '总量',
+        //     data: [100]
+        //   }
+        // ]
       }
     }
   },
   watch: {
-    'dataInfo': function(val) {
+    'dataInfo': function (val) {
       this.option1.title.text = val.title
       this.option1.xAxis.data = val.xAxisArr
       this.option1.series = val.seriesArr
       this.initEcharts()
     }
   },
-  mounted() {
+  mounted () {
     this.initEcharts()
   },
   methods: {
-    initEcharts() {
-      const echartsObj = echarts.init(document.getElementById(this.id))
+    initEcharts () {
+      let echartsObj = echarts.init(document.getElementById(this.id))
       echartsObj.setOption(this.option1)
     }
+  },
+  components: {
+
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <!-- 教学包章节的编写授权页面 -->
 <template>
   <div>
-    <header-nav :current-index="5"/>
+    <header-nav2 :current-index="5"/>
     <div class="test-question-bank-nav test-question-bank-nav2 wind-1240">
       <div class="location">
         <div class="localtion-title"><b>当前位置:</b></div>
@@ -166,22 +166,24 @@
 <script>
 
 // 引入头部导航页面
-import HeaderNav from '@/components/header-nav'
+import headernav2 from '@/components/header-nav-start-class'
 // 引入树插件页面
-import CbTree from '@/components/cb-tree'
+import CbTree from '@/components/cb-tree/index'
+import ZtreeLibrary from '@/components/ztree-library'
 // 引入分页组件页面
 import Pager from '@/components/pager'
 // 引入模态框组件页面
 import ModalDialog from '@/components/modal-dialog'
 // 引入的一些工具
 import { baseUrl, toast, alert } from '@/utils/global'
-import $ from '@/assets/jquery-vendor'
+import $ from 'jquery'
 
 export default {
   name: 'AuthorizationPackage',
   components: {
-    'header-nav': HeaderNav,
+    'header-nav2': headernav2,
     CbTree,
+    'ztree-library': ZtreeLibrary,
     'pager': Pager,
     'modal-dialog': ModalDialog
   },

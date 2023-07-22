@@ -58,6 +58,16 @@ export const uploadFile = (data, callbackpro, cancelback, isBoard = false) => {
     cancelback(cancel)
   })
 }
+/**
+ * 文件上传
+ */
+/* export const uploadFile = (data) => {
+  return axios({
+    url: '/cloud-api/file/uploadFile',
+    method: 'post',
+    data
+  })
+}*/
 
 /**
  * 文件重命名
@@ -115,11 +125,66 @@ export const copyFile = (data) => {
 }
 
 /**
+ * 给予权限
+ */
+export const setPermissions = (data) => {
+  return axios({
+    url: '/cloud-api/cloudpanpermissions/setPermissionsNew',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取权限拥有人
+ */
+export const queryPermissions = (data) => {
+  return axios({
+    url: '/cloud-api/cloudpanpermissions/queryPermissions',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 查询快捷面板设置列表信息
+ */
+export const querNavBarList = (data) => {
+  return axios({
+    url: '/cloud-api/navbar/querNavBarList',
+    method: 'post',
+    data
+  })
+}
+
+/**
  * 获取右侧快捷面板
  */
 export const queryRightList = (data) => {
   return axios({
     url: '/cloud-api/navbar/queryRightList',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 保存快捷面板
+ */
+export const saveNavBarBatch = (data) => {
+  return axios({
+    url: '/cloud-api/navbar/saveNavBarBatch',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 设置云盘目录  ：  学员是否可见
+ */
+export const setStudentNotVisible = (data) => {
+  return axios({
+    url: '/cloud-api/cloudpanpermissions/setStudentNotVisible',
     method: 'post',
     data
   })
@@ -145,6 +210,17 @@ export const getTreeDataForAuth = params => {
     url: '/cloud-api/cloudpanpermissions/getTreeDataForAuth',
     method: 'get',
     params
+  })
+}
+
+/**
+ * 提交权限设置
+ */
+export const saveAuth = data => {
+  return axios({
+    url: '/cloud-api/cloudpanpermissions/saveAuth',
+    method: 'post',
+    data
   })
 }
 

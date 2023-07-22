@@ -22,6 +22,9 @@
       <li v-for="(item0, index0) in tocList" :key="index0" :class="[isCurrIndex == index0? 'resConNavItemSelected' : '']" @click="toClickAnchorPoint(item0, index0)">{{ item0.innerText }}</li>
     </ul>
 
+    <!-- <el-tabs v-if="tocList && tocList.length > 0" v-model="isCurrIndex" tab-position="right" class="resConNavWrap">
+      <el-tab-pane v-for="(item0, index0) in tocList" :key="index0" :label="item0.innerText" :name="index0+''" />
+    </el-tabs> -->
   </div>
 
   <!-- <div class="accessory-viewer" v-viewer style="display: none;">
@@ -42,16 +45,18 @@ import 'tinymce/plugins/table'
 import 'tinymce/plugins/lists'
 import 'tinymce/plugins/hr'
 import 'tinymce/plugins/contextmenu'
+import 'tinymce/plugins/formatpainter'
 import 'tinymce/plugins/wordcount'
 import 'tinymce/plugins/colorpicker'
 import 'tinymce/plugins/textcolor'
+import 'tinymce/plugins/media'
 import 'tinymce/plugins/emoticons'
 import 'tinymce/plugins/paste'
 import 'tinymce/plugins/fullscreen'
 import 'tinymce/plugins/toc'
 import 'tinymce/plugins/preview'
 import 'tinymce/plugins/code'
-import 'tinymce/plugins/codesample'
+// import 'tinymce/plugins/codesample'
 import 'tinymce/plugins/searchreplace'
 import 'tinymce/plugins/autoresize'
 import { baseUrl, alert, loadingModal } from '@/utils/global'
@@ -161,6 +166,48 @@ export default {
   }, // 继承父组件中的name, dataForm属性，拓展功能请在此配置
   data() {
     return {
+      codesample_languages: [ // 编辑器 codesample 语言选择数组
+        {
+          text: 'HTML/XML',
+          value: 'markup'
+        },
+        {
+          text: 'JavaScript',
+          value: 'javascript'
+        },
+        {
+          text: 'CSS',
+          value: 'css'
+        },
+        {
+          text: 'PHP',
+          value: 'php'
+        },
+        {
+          text: 'Ruby',
+          value: 'ruby'
+        },
+        {
+          text: 'Python',
+          value: 'python'
+        },
+        {
+          text: 'Java',
+          value: 'java'
+        },
+        {
+          text: 'C',
+          value: 'c'
+        },
+        {
+          text: 'C#',
+          value: 'csharp'
+        },
+        {
+          text: 'C++',
+          value: 'cpp'
+        }
+      ],
       isCurrIndex: 0, // 当前选择的数组下标
       tocList: [], // 锚点数组
       viewerImgSrc: '', // 图片预览src
@@ -202,6 +249,14 @@ export default {
 
         this.$nextTick(() => {
           if (this.$el.querySelector('#resContent_ifr')) {
+            // console.log('editer初始化结束后执行------scrollTop', this.$el.querySelector("#resContent_ifr").contentWindow)
+            // this.$el.querySelector("#resContent_ifr").scrollTop = 0;
+
+            // iframe.contentWindow.window.scrollTo(0,0);
+            // this.$el.querySelector("#resContent_ifr").scrollIntoView() // .scrollTop = 0;
+            // this.$el.querySelector("#resContent_ifr").scrollIntoView() // .scrollTop = 0;
+            // this.$el.querySelector("#resContent_ifr").scrollTo(0,0)
+
             this.$el.querySelector('#resContent_ifr').contentWindow.scrollTo(0, 0)
           }
           if (this.$el.querySelector('#resContentTogetherBuild_ifr')) {
@@ -219,9 +274,26 @@ export default {
         })
         this.titleAddAnchorPoint()
       }
+      // if (!this.isEditChapter){
+      //   if (tinymce.activeEditor.getBody()) {
+      //     tinymce.activeEditor.getBody().setAttribute('contenteditable', false);
+      //   }
+      //   this.isEditReadOnly = false;
+      // }
     }
   },
   mounted() {
+    // tinymce.PluginManager.add("formatpainter", function (editor, url) {
+    //   editor.ui.registry.addButton("formatpainter", {
+    //       title: '格式刷',
+    //       icon: ' el-icon-s-open',
+    //       onclick: function(){
+    //         editor.settings.formatpainterCallback(function(r){
+    //             console.log('inserting image to editor: '+ r);
+    //         });
+    //       },
+    //   })
+    // });
     const toolStr = (this.toolStr) ? (this.toolStr) : ('undo redo styleselect formatselect fontselect fontsizeselect bold italic forecolor backcolor hr alignleft aligncenter alignright alignjustify ' +
       ' bullist numlist toc table wordcount searchreplace formatpainter bdmap axupimgs removeformat ' + (this.showImageButton ? 'image' : '') + (this.showMediaButton ? ' media ' : '') + 'link codesample preview fullscreen previousChapter nextChapter' + (this.isShowSaveChapterBtn ? ' saveChapter' : ''))
     // 如果该ID的编辑器存在，则先销毁
@@ -270,7 +342,8 @@ export default {
                       'audio::-internal-media-controls-overflow-button{display: none !important;}' +
                       '.mce-object[data-mce-object="audio"]{background: #D5D5D5 url(/static/image/audio.png) no-repeat center !important;}' +
                       'body, td, pre{position: relative;outline: none !important;font: 14px/1.5 "PingFang SC","微软雅黑","Microsoft YaHei","Helvetica","Helvetica Neue","Tahoma","Arial,sans-serif";}' +
-                      '.btn-pre-copy{display: none;background-color: red;color: #ffffff;position: absolute;right:30px;font-size:13px;height:30px;line-height: 30px;width:80px;text-align: center;cursor: pointer;-webkit-user-select:none !important;;-moz-user-select:none !important;;-ms-user-select:none !important;;user-select:none !important;;}' +
+                      '.pre-select-languages-wrap{text-align: right;}' +
+                      '.btn-pre-copy{display: none;background-color: red;color: #ffffff;position: absolute;right:30px;font-size:13px;height:30px;line-height: 30px;width:80px;text-align: center;cursor: pointer;text-shadow: none;font-weight: bolder;}' + // -webkit-user-select:none !important;;-moz-user-select:none !important;;-ms-user-select:none !important;;user-select:none !important;;
                       'table{border-collapse: collapse !important;}' +
                       '.btn-pre-copy:hover{background-color: rgb(248, 98, 98);}' +
                       'pre:hover .btn-pre-copy{display: block;}' +
@@ -323,8 +396,7 @@ export default {
         }
       ],
       external_plugins: {
-        'formatpainter': '/static/creatorblue/tinymce/formatpainter/plugin.min.js',
-        'media': '/static/creatorblue/tinymce/media/plugin.js',
+        'codesample': '/static/creatorblue/tinymce/codesample/plugin.js',
         'bdmap': '/static/creatorblue/tinymce/bdmap/plugin.min.js',
         'axupimgs': '/static/creatorblue/tinymce/axupimgs/plugin.min.js',
         'powerpaste': '/static/creatorblue/tinymce/powerpaste/plugin.min.js'
@@ -525,6 +597,23 @@ export default {
               }, 1500)
             })
           }
+
+          // eslint-disable-next-line eqeqeq
+          // if (e.path[0].tagName === 'PRE' && comp.mediaIsPreview != 'true') { // 编辑 出现 选择语音 下拉选择
+          //   if (e.path[0].innerHTML.indexOf('<div class="pre-select-languages-wrap"><select') === -1) {
+          //     let selectStr = '<div class="pre-select-languages-wrap"><select class="pre-select-languages" contentEditable="true">'
+          //     const code = ((e.path[0]).className.match(/language-(\w+)/)) ? ((e.path[0]).className.match(/language-(\w+)/)[1]) : (comp.codesample_languages[0].value)
+          //     for (let i = 0; i < comp.codesample_languages.length; i++) {
+          //       selectStr = selectStr + '<option ' + (comp.codesample_languages[i].value === code ? 'selected' : '') + ' value="' + comp.codesample_languages[i].value + '">' + comp.codesample_languages[i].text + '</option>'
+          //     }
+          //     selectStr = selectStr + '</select></div>'
+
+          //     $(e.path[0]).append(selectStr)
+          //   }
+          //   e.path[0].querySelector('.pre-select-languages').addEventListener('change', function() {
+          //     e.path[0].className = 'language-' + $(this).val()
+          //   })
+          // }
         })
 
         // 监听编辑器双击事件

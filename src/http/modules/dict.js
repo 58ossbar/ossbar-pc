@@ -41,3 +41,11 @@ export const listDeployMainType = params => {
     params
   })
 }
+
+export const listPkgBookType = params => {
+  return axios({
+    url: 'dict-api/listPkgBookType',
+    method: 'get',
+    params
+  })
+}

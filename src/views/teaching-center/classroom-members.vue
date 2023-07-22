@@ -2,6 +2,32 @@
 <template>
   <div class="classroom-rembers-box">
     <div v-if="isShowClassroomRembersMain">
+      <!-- <div class="class-member-header">
+                <div class="class-member-num">课堂成员（{{classroomMemberNum}}人）</div>
+                <div class="member-manger-box">
+                    <div
+                      v-show="hasPermission && awaitAuditTraineeList.length > 0"
+                      class="member-manger"
+                      @click="handleShowAwaitAuditDialog">
+                        <img class="import-member-icon" src="static/image/teaching_center/audit_1.png" alt="导入">
+                        <span>审核成员</span>
+                    </div>
+                    <div
+                      v-show="false"
+                      class="member-manger"
+                      @click="handleImportClassroomMember">
+                        <img class="import-member-icon" src="static/image/teaching_center/import.png" alt="导入">
+                        <span>导入课堂成员</span>
+                    </div>
+                    <div
+                      v-show="hasPermission"
+                      class="member-manger"
+                      @click="handleShowGruopingManager">
+                        <i class="fa fa-users" aria-hidden="true" style="line-height: 20px"></i>
+                        <span>分组管理</span>
+                    </div>
+                </div>
+            </div> -->
       <div class="class-member-con">
         <div class="class-member-con-left classroom-member-box">
 
@@ -21,6 +47,18 @@
           <div v-show="tabIndex == 1">
             <!-- 课堂成员搜索 -->
             <div class="search-box" style="display: flex;">
+              <!-- <input
+                                type="text"
+                                v-model="traineeName"
+                                @keyup.enter="handleSearchTraineeName"
+                                placeholder="搜索"> -->
+              <!-- <i class="fa fa-search" aria-hidden="true" style="font-size: 23px" @click="handleSearchTraineeName"></i>-->
+              <!-- <img
+                                @click="handleSearchTraineeName"
+                                src="static/image/search_2.png"
+                                alt="搜索"
+                                title="搜索"> -->
+              <!-- v-if="hasPermission && awaitAuditTraineeList.length > 0" -->
               <el-button
                 v-if="permission.hasCheckTraineePermission && awaitAuditTraineeList.length > 0 && !isClassroomFinished"
                 type="warning"
@@ -74,6 +112,21 @@
                       <p class="mobile">{{ classroomTrainee.mobile }}</p>
                     </div>
                   </div>
+                  <!-- <div
+                                    v-show="hasPermission"
+                                    class="pull-down-btn"
+                                    @click.stop="showClassroomMember($event,index)">
+                                    <i class="fa fa-list-ul"></i>
+                                    <ul
+                                        id="classroomMember"
+                                        :class="['changeTeach','classroomMember'+index,isClassroomPullDown?'changeTeach-bottom':'changeTeach-top']">
+                                        <li v-show="classroomTrainee.state === 'N'" @click="handleGetApproved(classroomTrainee.traineeId,'Y')">通过</li>
+                                        <li v-show="classroomTrainee.state === 'N'" @click="handleGetApproved(classroomTrainee.traineeId,'N')">不通过</li>
+                                        <li v-show="classroomTrainee.state === 'Y' && classroomTrainee.stateName !== '助教'" @click="handleSetTeachingAssistant(classroomTrainee)">设为助教</li>
+                                        <li v-show="classroomTrainee.state === 'Y'" @click="showEditTraineeInfo(classroomTrainee)">编辑</li>
+                                        <li v-show="classroomTrainee.state === 'Y'" @click="handleDleClassroomTrainee(classroomTrainee)">删除</li>
+                                    </ul>
+                                </div> -->
                   <el-dropdown v-if="(permission.hasDeleteTraineePermission || permission.hasCheckTraineePermission) && !isClassroomFinished" @command="handleCommand">
                     <span class="el-dropdown-link">
                       <i class="fa fa-list-ul" style="width:30px;" @click.stop=""/>
@@ -174,6 +227,20 @@
             <div class="user-info">
               <p class="traineeName">{{ baseInfo.traineeName }}</p>
               <p class="remark">{{ baseInfo.remark }}</p>
+              <div v-if="hasPermission" class="detail" @click="handleEmpiricalValueDetails(baseInfo.traineeId)">
+                <i class="fa fa-file-text" aria-hidden="true" style="font-size: 14px"/>
+                <span>经验值明细</span>
+              </div>
+            </div>
+            <div style="margin-left: 60px;">
+              <el-button
+                v-if="hasPermission && !isClassroomFinished"
+                type="primary"
+                size="small"
+                plain
+                style="margin-right:10px;"
+                icon="el-icon-circle-plus"
+                @click="studentToClassroom">一键加课堂成员</el-button>
             </div>
           </div>
           <div class="chart-con">
@@ -356,6 +423,16 @@
               <div class="grouping-name">{{ viewClassroomGroupInfo.groupName }}({{ viewClassroomGroupInfo.number }}人)</div>
 
               <div class="search-box">
+                <!-- <input
+                                    type="text"
+                                    v-model="groupRemberName"
+                                    @keyup.enter="handleSearchGroupRemberName"
+                                    placeholder="搜索">
+                                <img
+                                    @click="handleSearchGroupRemberName"
+                                    src="static/image/search_2.png"
+                                    alt="搜索"
+                                    title="搜索"> -->
                 <el-input
                   v-if="hasPermission && listClassroomGroupSimpleInfo.length > 0"
                   v-model="groupRemberName"
@@ -369,6 +446,21 @@
 
             <!-- 右侧分组操作 -->
             <div class="right-btn-list ">
+              <!-- 删除当前分组 -->
+              <!-- <div class="add-grouping-member-btn" @click="handleRemoveGroup()" v-if="this.listClassroomGroupSimpleInfo.length > 0">
+                                <img class="back-icon" src="static/image/teaching_center/del_3.svg">
+                                <span>删除分组</span>
+                            </div> -->
+              <!-- 重命名当前分组 -->
+              <!-- <div class="add-grouping-member-btn" @click="handleIsShowEditGroup" v-if="this.listClassroomGroupSimpleInfo.length > 0">
+                                <img class="back-icon" src="static/image/teaching_center/edit_1.svg">
+                                <span>重命名分组</span>
+                            </div> -->
+              <!-- 给当前分组添加成员 -->
+              <!-- <div class="add-grouping-member-btn" @click="handleShowAddGroupDialog" v-if="this.listClassroomGroupSimpleInfo.length > 0">
+                                <img class="back-icon" src="static/image/teaching_center/add_1.svg">
+                                <span>添加小组成员</span>
+                            </div> -->
 
               <el-button
                 v-if="groupPermission.hasAddGmTraineePermission && listClassroomGroupSimpleInfo.length > 0 && !isClassroomFinished"
@@ -410,12 +502,100 @@
                 class="add-grouping-member-btn"
                 icon="el-icon-delete-solid"
                 @click="handleRemoveGroup()">删除分组</el-button>
+                <!-- 返回 -->
+                <!-- <div class="back" @click="handleshowRembersMain">
+                                <img class="back-icon" style="width: 16px;height: 16px" src="static/image/teaching_center/back_2.svg">
+                                <span>返回</span>
+                            </div> -->
             </div>
 
           </div>
           <!-- 当前分组的信息显示开始 -->
           <div class="grouping-member-list-con">
+            <!-- 分组数量显示 -->
+            <!-- <h3 class="grouping-name"  v-if="classroomGroupInfoPager.totalPage">{{viewClassroomGroupInfo.groupName}}({{viewClassroomGroupInfo.number}}人)</h3> -->
+            <!-- 分组成员显示 -->
+            <!-- <ul class="grouping-member-list" v-show="viewClassroomGroupMemberList.length>0">
+                            <li
+                                class="grouping-member-item"
+                                :key="index"
+                                v-for="(classroomGroupMember,index) in viewClassroomGroupMemberList">
+                                /////成员的序号
+                                <div class="serial-number">{{(classroomGroupInfoPager.currPage - 1) * classroomGroupInfoPager.pageSize +index+1 | filterIndex}}</div>
+                               //////////// 成员的头像以及姓名
+                                <div class="member-name">
+                                    <img :src="classroomGroupMember.traineePic" alt="头像">
+                                    <span>{{classroomGroupMember.traineeName}}</span>
+                                </div>
+                                //////////////成员的性别
+                                <div class="traineeSex">{{classroomGroupMember.traineeSex ? classroomGroupMember.traineeSex : '保密'}}</div>
+                                ////////////成员操作按钮是否显示图标
+                                <div class="operation">
+                                    /// <i
+                                   //   class="fa fa-pencil-square-o"
+                                   //   aria-hidden="true"
+                                   //   title="操作"
+                                   //   v-show="!operationButton || operationTraineeId !== classroomGroupMember.traineeId"
+                                   //   @click="handleIsShowOperation(classroomGroupMember.traineeId)"
+                                   //   style="color: #007bff;font-size: 16px;margin-top: 7px"> 编辑</i>
+                                    <el-button
+                                      v-if="groupPermission.hasSetGmLeaderPermission && (!operationButton || operationTraineeId !== classroomGroupMember.traineeId) && !isClassroomFinished"
+                                      @click="handleIsShowOperation(classroomGroupMember.traineeId)"
+                                      size="mini">编辑</el-button>
+
+                                </div>
+                               // 成员的操作按钮
+                                <transition name="el-fade-in-linear">
+                                    <div class="grouping-member-operation" v-if="operationButton && classroomGroupMember.traineeId === operationTraineeId">
+                                        // 成为小组组长按钮
+                                        ////<el-button type="primary" size="mini" plain @click="handleAddGroupLeader(classroomGroupMember)">成为组长</el-button>
+
+                                        <el-dropdown @command="handleSettingGroupIdentity($event,classroomGroupMember.gmId)">
+                                            <el-button type="primary" size="mini" plain>设置身份<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                                            <el-dropdown-menu slot="dropdown">
+                                                <el-dropdown-item v-for="(identity, indexi) in identityList" :key="indexi" :command="identity.dictCode" :disabled="classroomGroupMember.dictCode == identity.dictCode">{{identity.dictValue}}</el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </el-dropdown>
+
+                                       //// 成员删除按钮
+                                        <el-button type="danger" size="mini" plain @click="handleRemoveGroupRember(classroomGroupMember)" style="margin-left: 10px;">删除</el-button>
+                                        ////操作按钮隐藏按钮
+                                        <el-button type="info" size="mini" plain @click="handleIsShowOperation">取消</el-button>
+                                    </div>
+                                </transition>
+                                /////左角标小组组长显示标签
+                                ///<div class="group-leader" v-if="classroomGroupMember.isLeader === 'Y'">
+                                //    <span>组长</span>
+                               //// </div>
+                                <div class="group-leader" v-if="classroomGroupMember.dictValue">
+                                    <span>{{classroomGroupMember.dictValue}}</span>
+                                </div>
+                            </li>
+                        </ul> -->
+            <!-- 小组没有成员所显示的图片 -->
+            <!-- <div class="no-data-hint" v-if="viewClassroomGroupMemberList.length<=0">
+                            <img src="static/image/manage_board/creatkc.png" alt="">
+                            <p>暂无数据</p>
+                        </div> -->
+
+            <!-- <div class="grouping-member-table-btns">
+                            <h3 class="grouping-name">{{viewClassroomGroupInfo.groupName}}({{viewClassroomGroupInfo.number}}人)</h3>
+
+                            <div  class="right-btn-list ">
+                                <el-button type="primary" size="small"  plain  v-if="groupPermission.hasAddGmTraineePermission && this.listClassroomGroupSimpleInfo.length > 0 && !isClassroomFinished" class="add-grouping-member-btn"  @click="handleShowAddGroupDialog()" icon="el-icon-circle-plus-outline">添加小组成员</el-button>
+
+                                <el-button  type="danger" size="small" plain v-if="groupPermission.hasDeleteGmTraineePermission && this.viewClassroomGroupMemberList.length > 0 && !isClassroomFinished" class="add-grouping-member-btn" @click="handleShowDelGroupMemberDialog()" icon="el-icon-delete">删除小组成员</el-button>
+
+                                <el-button type="primary" size="small"  plain  v-if="groupPermission.hasSetGmLeaderPermission && this.viewClassroomGroupMemberList.length > 0 && !isClassroomFinished" class="add-grouping-member-btn"  @click="handleShowAddGroupDialog()" icon="el-icon-circle-plus-outline">批量设置小组成员身份</el-button>
+
+                                <el-button  type="primary" size="small"  plain v-if="groupPermission.hasRenameGroupPermission && this.listClassroomGroupSimpleInfo.length > 0 && !isClassroomFinished"  class="add-grouping-member-btn" @click="handleIsShowEditGroup()" icon="el-icon-edit">重命名分组</el-button>
+
+                                <el-button  type="danger" size="small"  plain  v-if="groupPermission.hasDeleteGroupPermission && this.listClassroomGroupSimpleInfo.length > 0 && !isClassroomFinished"   class="add-grouping-member-btn"  @click="handleRemoveGroup()" icon="el-icon-delete-solid">删除分组</el-button>
+                            </div>
+                        </div> -->
+
             <el-table ref="multipleTable" :data="viewClassroomGroupMemberList" height="470px" stripe tooltip-effect="dark" class="grouping-member-list grouping-member-table-list" >
+              <!-- <el-table-column type="selection" width="55"></el-table-column>   @selection-change="handleSelectionChange"  -->
               <el-table-column type="index" width="50"/>
               <el-table-column prop="traineeName" label="姓名" show-overflow-tooltip>
                 <template slot-scope="scope" >
@@ -552,6 +732,57 @@
       </div>
     </modal-dialog>
     <!-- 编辑学生信息弹出框end -->
+    <!-- 经验值明细模态框开始 -->
+    <modal-dialog
+      id="empirical-value-details-dialog"
+      ref="experience"
+      :width="'800px'"
+      :is-show-footer-btn="false"
+      title="经验值明细">
+      <div slot="main">
+        <!-- 所有经验明细显示开始 -->
+        <div class="empirical">
+          <!-- 内容 -->
+          <div class="empirical-content">
+            <el-table
+              :data="empiricalValueInfo"
+              :header-cell-style="{background:'#F3F4F7',color:'#555'}"
+              height="288px"
+              style="width: 100%">
+              <el-table-column
+                prop="createTime"
+                label="日期"
+                width="160"/>
+              <el-table-column
+                prop="msg"
+                label="操作"
+                width="800">
+                <template slot-scope="scope">
+                  <span :title="scope.row.msg" class="empirical-msg">{{ scope.row.msg }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="empiricalValue"
+                align="center"
+                label="经验值"/>
+            </el-table>
+            <!-- 分页信息 -->
+            <div>
+              <pager
+                v-if="experienceValueInfoPager.totalPage"
+                :page-size-prop="experienceValueInfoPager.pageSizeProp"
+                :curr-page="experienceValueInfoPager.currPage"
+                :total-page="experienceValueInfoPager.totalPage"
+                align="center"
+                @changeIndex="changeExperienceValueIndex"
+              />
+            </div>
+          </div>
+        </div>
+        <!-- 所有经验明细显示结束 -->
+      </div>
+    </modal-dialog>
+    <!-- 经验值明细模态框结束 -->
     <!-- 待审核成员列表start -->
     <modal-dialog
       id="await-audit-trainee-dialog"
@@ -562,6 +793,15 @@
       <div slot="main">
         <div class="main-top classroom-member-box">
           <div class="search-box">
+            <!-- <input
+                            type="text"
+                            v-model="awaitAuditTraineePagerInfo.traineeName"
+                            placeholder="搜索">
+                        <img
+                            @click="handleSearchAwaitAuditTraineePagerInfoName"
+                            src="static/image/search_2.png"
+                            alt="搜索"
+                            title="搜索"> -->
             <el-input
               v-model="awaitAuditTraineePagerInfo.traineeName"
               placeholder="搜索"
@@ -676,6 +916,253 @@
     </modal-dialog>
     <!-- 移出课堂 列表end -->
 
+    <!--  班级学员start-->
+    <div v-if="isShowImportCalssMembers" class="import-calss-members-box">
+      <div class="location bg-fafafa">
+        <div class="localtion-title"><b>当前位置:</b></div>
+        <ul class="localtion-list">
+          <li class="localtion-item" @click="handleshowRembersMain">
+            课堂成员
+          </li>
+          <li class="localtion-item">
+            班级成员列表
+          </li>
+        </ul>
+      </div>
+      <div class="import-calss-members-con">
+        <div class="top-menu-box classroom-member-box">
+          <div class="search-box ">
+            <el-input
+              v-model="classMemberName"
+              placeholder="搜索"
+              size="medium"
+              suffix-icon="el-icon-search"
+              @change="handleSearchClassMember"
+              @keyup.enter.native="handleSearchClassMember"/>
+          </div>
+          <div class="right-operation-box">
+            <div class="selected-member-num">共{{ classMemberNumPeople }}人/已选择{{ selectListClassTrainee.length }}人</div>
+            <div
+              class="impotr-btn"
+              @click="handleImportTraineeBatch">
+              <img class="import-member-icon" src="static/image/teaching_center/import.png" alt="导入">
+              <span>导入成班课成员</span>
+            </div>
+            <div class="back" @click="handleshowRembersMain">
+              <img class="back-icon" src="static/image/teaching_center/back_2.png">
+              <span>返回</span>
+            </div>
+          </div>
+        </div>
+        <table class="comm-table">
+          <tr class="t-head">
+            <th>
+              <span @click="handleCheckAll">
+                <input v-model="isCheckAll" type="checkbox">全选
+              </span>
+            </th>
+            <th>姓名</th>
+            <th>学号</th>
+            <th>班级</th>
+            <th>性别</th>
+          </tr>
+          <tr
+            v-for="(classTrainee,index) in listClassTrainee"
+            :key="index"
+            class="t-body"
+            @click="handleSelectClassTrainee(classTrainee,index)">
+            <td>
+              <input v-model="classTrainee.isSelect" type="checkbox">
+            </td>
+            <td>
+              <img :src="classTrainee.traineePic" alt="学生头像">
+              <span>{{ classTrainee.traineeName }}</span>
+            </td>
+            <td>13456789</td>
+            <td>{{ classTrainee.className }}</td>
+            <td>{{ classTrainee.traineeSex | filterSex }}</td>
+          </tr>
+        </table>
+        <div v-if="listClassTrainee.length<=0" class="no-data-hint">
+          <img src="static/image/manage_board/nodate.svg" alt="">
+          <p>暂无数据</p>
+        </div>
+        <div >
+          <pager
+            v-if="pagerInfo.totalPage"
+            :page-size-prop="pagerInfo.pageSizeProp"
+            :curr-page="pagerInfo.currPage"
+            :total-page="pagerInfo.totalPage"
+            align="center"
+            @changeIndex="changeIndex"
+          />
+        </div>
+      </div>
+    </div>
+    <!--  班级学员end-->
+    <!-- 成员小组方案管理start -->
+    <div v-if="isShowGroupingManager" class="grouping-manager-box">
+      <div class="location bg-fafafa">
+        <div class="localtion-title">
+          <b>当前位置:</b>
+        </div>
+        <ul class="localtion-list">
+          <li class="localtion-item" style="cursor: pointer;" @click="handleshowRembersMain">
+            课堂成员
+          </li>
+          <li class="localtion-item">
+            <span style="color: #959da0;">分组管理</span>
+          </li>
+        </ul>
+      </div>
+      <div class="grouping-manage-con">
+        <div class="left-grouping-box ">
+          <div class="grouping-top">
+            <span>分组列表</span>
+            <b-button
+              variant="outline-primary"
+              size="sm"
+              @click="handleIsShowAddGroup">+新增分组</b-button>
+          </div>
+          <ul class="grouping-list">
+            <li
+              v-for="(classroomGroupSimpleInfo,index) in listClassroomGroupSimpleInfo"
+              :key="index"
+              :class="['grouping-list-item',index === currentClassMemberIndex ? 'bg-f5f5f5' : '']"
+              @click="handleViewClassroomGroupInfo(classroomGroupSimpleInfo,index)">
+              <div>{{ classroomGroupSimpleInfo.groupName }}</div>
+              <div class="right-arrow">
+                <span>{{ classroomGroupSimpleInfo.number }}</span>
+                <img class="back-icon" src="static/image/teaching_center/right_arrow_1.png">
+              </div>
+            </li>
+          </ul>
+          <div v-if="listClassroomGroupSimpleInfo.length<=0" class="no-data-hint">
+            <img src="static/image/manage_board/nodate.svg">
+            <p>暂无数据</p>
+          </div>
+        </div>
+        <div class="right-grouping-member-box ">
+          <div class="grouping-member-detail-top  classroom-member-box">
+            <div class="search-box">
+              <input
+                v-model="groupRemberName"
+                type="text"
+                placeholder="搜索"
+                @keyup.enter="handleSearchGroupRemberName">
+              <img
+                src="static/image/search_2.png"
+                alt="搜索"
+                title="搜索"
+                @click="handleSearchGroupRemberName">
+            </div>
+            <!-- 右侧分组操作 -->
+            <div class="right-btn-list ">
+              <!-- 删除当前分组 -->
+              <div v-if="listClassroomGroupSimpleInfo.length > 0" class="add-grouping-member-btn" @click="handleRemoveGroup()">
+                <img class="back-icon" src="static/image/teaching_center/del_3.svg">
+                <span>删除分组</span>
+              </div>
+              <!-- 重命名当前分组 -->
+              <div v-if="listClassroomGroupSimpleInfo.length > 0" class="add-grouping-member-btn" @click="handleIsShowEditGroup">
+                <img class="back-icon" src="static/image/teaching_center/edit_1.svg">
+                <span>重命名分组</span>
+              </div>
+              <!-- 给当前分组添加成员 -->
+              <div v-if="listClassroomGroupSimpleInfo.length > 0" class="add-grouping-member-btn" @click="handleShowAddGroupDialog">
+                <img class="back-icon" src="static/image/teaching_center/add_1.svg">
+                <span>添加小组成员</span>
+              </div>
+              <!-- 返回 -->
+              <div class="back" @click="handleshowRembersMain">
+                <img class="back-icon" style="width: 16px;height: 16px" src="static/image/teaching_center/back_2.svg">
+                <span>返回</span>
+              </div>
+            </div>
+
+          </div>
+          <!-- 当前分组的信息显示开始 -->
+          <div class="grouping-member-list-con">
+            <!-- 分组数量显示 -->
+            <h3 v-if="classroomGroupInfoPager.totalPage" class="grouping-name">{{ viewClassroomGroupInfo.groupName }}({{ viewClassroomGroupInfo.number }}人)</h3>
+            <!-- 分组成员显示 -->
+            <ul v-show="viewClassroomGroupMemberList.length>0" class="grouping-member-list">
+              <li
+                v-for="(classroomGroupMember,index) in viewClassroomGroupMemberList"
+                :key="index"
+                class="grouping-member-item">
+                <!-- 成员的序号 -->
+                <div class="serial-number">{{ (classroomGroupInfoPager.currPage - 1) * classroomGroupInfoPager.pageSize +index+1 | filterIndex }}</div>
+                <!-- 成员的头像以及姓名 -->
+                <div class="member-name">
+                  <img :src="classroomGroupMember.traineePic" alt="头像">
+                  <span>{{ classroomGroupMember.traineeName }}</span>
+                </div>
+                <!-- 成员的性别 -->
+                <div class="traineeSex">{{ classroomGroupMember.traineeSex ? classroomGroupMember.traineeSex : '保密' }}</div>
+                <!-- 成员操作按钮是否显示图标 -->
+                <div class="operation">
+                  <!--<i
+                                      class="fa fa-pencil-square-o"
+                                      aria-hidden="true"
+                                      title="操作"
+                                      v-show="!operationButton || operationTraineeId !== classroomGroupMember.traineeId"
+                                      @click="handleIsShowOperation(classroomGroupMember.traineeId)"
+                                      style="color: #007bff;font-size: 16px;margin-top: 7px"> 编辑</i>-->
+                  <el-button
+                    v-show="(!operationButton || operationTraineeId !== classroomGroupMember.traineeId) && !isClassroomFinished"
+                    size="mini"
+                    @click="handleIsShowOperation(classroomGroupMember.traineeId)">编辑</el-button>
+
+                </div>
+                <!-- 成员的操作按钮 -->
+                <transition name="el-fade-in-linear">
+                  <div v-show="operationButton && classroomGroupMember.traineeId === operationTraineeId" class="grouping-member-operation">
+                    <!-- 成为小组组长按钮 -->
+                    <el-button type="primary" size="mini" plain @click="handleAddGroupLeader(classroomGroupMember)">成为组长</el-button>
+
+                    <!-- <el-dropdown>
+                                            <el-button type="primary" size="mini" plain>设置身份<i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                                            <el-dropdown-menu slot="dropdown">
+                                                <el-dropdown-item v-for="(identity, indexi) in identityList" :key="indexi">{{identity.dictValue}}</el-dropdown-item>
+                                            </el-dropdown-menu>
+                                        </el-dropdown> -->
+
+                    <!-- 成员删除按钮 -->
+                    <el-button type="danger" size="mini" plain @click="handleRemoveGroupRember(classroomGroupMember)">删除</el-button>
+                    <!-- 操作按钮隐藏按钮 -->
+                    <el-button type="info" size="mini" plain @click="handleIsShowOperation">取消</el-button>
+                  </div>
+                </transition>
+                <!-- 左角标小组组长显示标签 -->
+                <div v-show="classroomGroupMember.isLeader === 'Y'" class="group-leader">
+                  <span>组长</span>
+                </div>
+              </li>
+            </ul>
+            <!-- 小组没有成员所显示的图片 -->
+            <div v-if="viewClassroomGroupMemberList.length<=0" class="no-data-hint">
+              <img src="static/image/manage_board/creatkc.png" alt="">
+              <p>暂无数据</p>
+            </div>
+            <!-- 小组成员的分页 -->
+            <div>
+              <pager
+                v-if="classroomGroupInfoPager.totalPage"
+                :page-size-prop="classroomGroupInfoPager.pageSizeProp"
+                :curr-page="classroomGroupInfoPager.currPage"
+                :total-page="classroomGroupInfoPager.totalPage"
+                align="center"
+                @changeIndex="changeClassroomGroupInfoPagerIndex"
+              />
+            </div>
+          </div>
+          <!-- 当前分组的成员显示结束 -->
+        </div>
+      </div>
+
+    </div>
+    <!-- 成员小组方案管理end -->
     <!-- 新建课堂小组start -->
     <modal-dialog
       id="add-classroom-group"
@@ -747,6 +1234,16 @@
       <div slot="main">
         <div class="main-top classroom-member-box">
           <div class="search-box">
+            <!-- <input
+                            type="text"
+                            @keyup.enter="handleSearchNoJoinClassTraineeName"
+                            v-model="noJoinClassTraineePager.traineeName"
+                            placeholder="搜索">
+                        <img
+                            @click="handleSearchNoJoinClassTraineeName"
+                            src="static/image/search_2.png"
+                            alt="搜索"
+                            title="搜索"> -->
             <el-input
               v-model="noJoinClassTraineePager.traineeName"
               placeholder="搜索"
@@ -780,6 +1277,20 @@
             <!-- </div> -->
           </li>
         </ul>
+
+        <!-- <ul class="main-list" v-if="listClassroomTraineeExcludeJoinedGroup.length>0">
+                    <li
+                        @click="handleSelectNoJoinTrainee(noJoinTrainee)"
+                        class="main-list-item"
+                        :key="index"
+                        v-for="(noJoinTrainee,index) in listClassroomTraineeExcludeJoinedGroup">
+                        <input type="checkbox" v-model="noJoinTrainee.isSelect">
+                        <div class="trainee-info">
+                            <img :src="noJoinTrainee.traineePic" alt="">
+                            <span>{{noJoinTrainee.traineeName}}</span>
+                        </div>
+                    </li>
+                </ul> -->
         <div v-if="listClassroomTraineeExcludeJoinedGroup.length<=0" class="no-data-hint" style="margin: 20px 0;">
           <img src="static/image/manage_board/nodate.svg" alt="">
           <p>暂无数据</p>
@@ -807,7 +1318,17 @@
       @cancel="cancelDelGroupTrainee">
       <div slot="main" >
         <div class="main-top classroom-member-box">
+          <!-- :class="[groupIsDelOrSetting && groupIsDelOrSetting == 'setting'?'search-box-setting-identity':'']" -->
           <div class="search-box search-box-setting-identity" >
+            <!-- <el-input
+                            placeholder="搜索"
+                            size="small"
+                            @change="handleSearchDelGroupMemberTraineeName"
+                            @keyup.enter.native="handleSearchDelGroupMemberTraineeName"
+                            v-model="delGroupTraineePager.traineeName"
+                            suffix-icon="el-icon-search">
+                        </el-input> -->
+
             <el-input v-model="delGroupTraineePager.traineeName" placeholder="输入姓名" size="medium" clearable @change="handleSearchDelGroupMemberTraineeName" @keyup.enter.native="handleSearchDelGroupMemberTraineeName" />
 
             <el-input v-model="delGroupTraineePager.mobile" placeholder="输入手机号码" size="medium" clearable @change="handleSearchDelGroupMemberTraineeName" @keyup.enter.native="handleSearchDelGroupMemberTraineeName" />
@@ -877,23 +1398,58 @@
     </modal-dialog>
     <!-- 批量 删除小组成员列表end -->
 
+    <!-- 一键添加课堂成员弹出框start -->
+    <modal-dialog
+      id="to-classroom"
+      title="选择课堂"
+      @cancel="handleToClassroomCancel"
+      @submit="handleToClassroomSubmit">
+      <div slot="main">
+        <div class="selection-class">
+          <div style="width:25%;line-height: 38px;">
+            课堂选择：
+          </div>
+          <el-select
+            v-model="currSelectionClass"
+            :popper-append-to-body="false"
+            popper-class="select-popper"
+            style="width: 100%"
+            multiple
+            filterable
+            default-first-option
+            placeholder="请选择课堂"
+            @change="changeSelect">
+            <el-checkbox v-model="checkedAll" @change="clickCheckedAll">全选</el-checkbox>
+            <el-option
+              v-for="(item,index) in allClassroom"
+              :key="index"
+              :label="item.name"
+              :value="item.ct_id"/>
+          </el-select>
+        </div>
+      </div>
+    </modal-dialog>
+    <!-- 一键添加课堂成员弹出框end -->
   </div>
 </template>
 
 <script>
 import ModalDialog from '@/components/modal-dialog'
-import $ from '@/assets/jquery-vendor'
+import $ from '../../assets/jquery-vendor'
 import BrokenLine from '@/components/broken-line'
 import RingLing from '@/components/ring-ling'
 import Gauge from '@/components/gauge'
 import Pager from '@/components/pager'
 import { baseUrl, confirm, toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
 export default {
-  name: 'ClassRoomMembers',
+  name: 'ClassroomMembers',
   filters: {
     filterIndex(value) {
       return value >= 10 ? value : '0' + value
     },
+    // filterSex(value){
+    //     return value === '1' ? '女' : '男';
+    // },
     // 字符串截取省略
     ellipsis(value) {
       if (!value) return ''
@@ -957,6 +1513,8 @@ export default {
       currentViewStudent: '', // 当前查看的学员
       isShowStartSingIn: false,
       handleSignInType: false,
+      isShowImportCalssMembers: false,
+      isShowGroupingManager: false,
       ctId: localStorage.getItem('ct_id'),
       listClassroomTrainee: [],
       empiricalValueInfo: [], // 当前学员经验值详情
@@ -996,6 +1554,12 @@ export default {
         totalPage: null, // 总页数
         pageSizeProp: 7, // 分页大小
         pageSize: 7// 分页大小
+      },
+      experienceValueInfoPager: {
+        currPage: 1, // 当前页
+        totalPage: null, // 总页数
+        pageSizeProp: 5, // 分页大小
+        pageSize: 5// 分页大小
       },
       noJoinClassTraineePager: {
         currPage: 1, // 当前页
@@ -1167,6 +1731,15 @@ export default {
       }
     }
   },
+  mounted() {
+
+  },
+  created() {
+    const that = this
+    window.eventBus.$on('eventBusReceivedMsgData', function(data) {
+      that.handleMessBackData(data)
+    })
+  },
   methods: {
     /** 小组里面 设置学员在小组里面的身份 */
     handleSettingGroupIdentity: function(command, gmId, type) {
@@ -1215,6 +1788,25 @@ export default {
       // 查询所有待审核成员
       this.queryTraineeList()
     },
+    /** 处理 返回的消息数据 */
+    handleMessBackData: function(res) {
+      const that = this
+      if (res.busitypeIndexNew === 15) { // 有人申请加入我创建的课堂 用于刷新成员列表
+        if (res.code === 0) {
+          if (res.data && res.data.msg) {
+            for (let i = 0; i < res.data.msg.length; i++) {
+              if (res.data.msg[i].ctId && localStorage.getItem('ct_id') && (res.data.msg[i].ctId === localStorage.getItem('ct_id'))) {
+                // 获取所有课堂成员
+                that.getListClassroomTrainee()
+                // this.getListClassTrainee();
+                // 查询所有待审核成员
+                that.queryTraineeList()
+              }
+            }
+          }
+        }
+      }
+    },
     // 调用显示课堂成员主界面
     tohandleshowRembersMain() {
       this.handleshowRembersMain()
@@ -1243,8 +1835,10 @@ export default {
       this.isShowStartSingIn = false
       this.handleSignInType = false
       this.isShowStatistics = false
+      this.isShowImportCalssMembers = false
       this.selectListClassTrainee = []
       this.isCheckAll = false
+      this.isShowGroupingManager = false
     },
     // 显示签到主界面
     handleShowClassroomRembersMain() {
@@ -1253,6 +1847,8 @@ export default {
       this.isShowStartSingIn = false
       this.handleSignInType = true
       this.isShowStatistics = false
+      this.isShowImportCalssMembers = false
+      this.isShowGroupingManager = false
       this.isShowViewSignInSettlement = false
       this.getHistorySignInRecord()
     },
@@ -1260,6 +1856,7 @@ export default {
     // 显示分组管理
     handleShowGruopingManager() {
       // this.isShowClassroomRembersMain=false;
+      // this.isShowGroupingManager=true;
       this.tabIndex = 2
       this.getIdentityList()
       this.getListClassroomGroupSimpleInfo()
@@ -1276,6 +1873,18 @@ export default {
           this.identityList = (res.data && res.data.length > 0) ? (res.data) : []
         }
       })
+    },
+
+    // 导入课堂成员
+    handleImportClassroomMember() {
+      this.getListClassTrainee()
+      this.isShowClassroomRembersMain = false
+      this.isShowSignInMain = false
+      this.handleSignInType = false
+      this.isShowStartSingIn = false
+      this.isShowStatistics = false
+      this.isShowImportCalssMembers = true
+      this.isShowGroupingManager = false
     },
 
     // 操作按钮的显示与隐藏
@@ -1302,6 +1911,34 @@ export default {
           this.getListClassroomGroupSimpleInfo()
         }
         toast(res.msg)
+      })
+    },
+
+    // 打开个人经验值明细模态框
+    handleEmpiricalValueDetails(value) {
+      this.currentViewStudent = value
+      this.$refs.experience.changeExperienceModal('1100px')
+      $('#empirical-value-details-dialog').modal('show')
+      // 调用获取个人经验明细方法
+      this.queryEmpiricalValue()
+    },
+
+    // 获取个人经验明细
+    queryEmpiricalValue() {
+      const obj = {
+        ctId: this.ctId,
+        traineeId: this.currentViewStudent,
+        pageNum: this.experienceValueInfoPager.currPage,
+        pageSize: this.experienceValueInfoPager.pageSize
+      }
+      // 调用学员经验值信息查询接口
+      this.$api.classroomMember.viewEmpiricalValueLogs(obj).then(res => {
+        if (res.code === 0) {
+          // 存入当前学员的经验值详情
+          this.empiricalValueInfo = res.data.list
+          // 存入总页数
+          this.experienceValueInfoPager.totalPage = res.data.totalPage
+        }
       })
     },
 
@@ -1352,6 +1989,14 @@ export default {
       this.awaitDelTraineePagerInfo.pageSize = size
       // 调用成员查询方法
       this.queryAllTraineeList()
+    },
+
+    // 经验值显示更新分页数据
+    changeExperienceValueIndex(value, size) {
+      this.experienceValueInfoPager.currPage = value
+      this.experienceValueInfoPager.pageSize = size
+      // 调用经验值信息查询方法
+      this.queryEmpiricalValue()
     },
 
     // 全选/取消全选待审核成员
@@ -2566,6 +3211,25 @@ export default {
       })
     },
 
+    // 获取属于当前教师的课堂
+    getAllClassroom() {
+      const obj = { ctId: this.ctId }
+      this.$api.classroomMember.queryClassroomList(obj).then(res => {
+        if (res.code === 0) {
+          this.allClassroom = res.data
+        } else {
+          toast(res.msg)
+        }
+      })
+    },
+
+    // 打开课堂选择弹出框
+    studentToClassroom() {
+      // 获取所有课堂
+      this.getAllClassroom()
+      $('#to-classroom').modal('show')
+    },
+
     /**
              *  课堂选择改变事件
              */
@@ -2585,6 +3249,31 @@ export default {
       } else {
         this.currSelectionClass = []
       }
+    },
+
+    // 一键添加课堂成员时关闭课堂选择弹出框
+    handleToClassroomCancel() {
+      $('#to-classroom').modal('hide')
+      this.currSelectionClass = []
+      this.checkedAll = false
+    },
+
+    // 提交课堂选择
+    handleToClassroomSubmit() {
+      if (this.currSelectionClass.length <= 0) {
+        toast('请选择课堂')
+        return false
+      }
+      const obj = { ctIds: this.currSelectionClass }
+      $('#to-classroom').modal('hide')
+      this.$api.classroomMember.oneClickToJoinClassroom(this.ctId, obj).then(res => {
+        if (res.code === 0) {
+          this.isShowPage()
+          // 刷新上方助教信息
+          this.$parent.viewPkgInfo()
+        }
+        toast(res.msg)
+      })
     }
 
   }

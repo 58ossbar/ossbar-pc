@@ -25,6 +25,17 @@ export const getMsgNum = params => {
 }
 
 /**
+ * 获取滚动新闻
+ * @param {*} params
+ */
+export const listNews = params => {
+  return axios({
+    url: 'managementPanel-api/listNews',
+    method: 'get'
+  })
+}
+
+/**
  * 保存信息
  * @param {*} data
  */

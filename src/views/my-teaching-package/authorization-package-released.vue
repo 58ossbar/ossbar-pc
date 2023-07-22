@@ -1,7 +1,7 @@
 <!-- 教学包的使用授权页面 -->
 <template>
   <div>
-    <header-nav :current-index="5"/>
+    <header-nav2 :current-index="5"/>
     <div class="test-question-bank-nav test-question-bank-nav2 wind-1240">
       <div class="location">
         <div class="localtion-title"><b>当前位置:</b></div>
@@ -122,7 +122,7 @@
 
 <script>
 // 引入头部导航页面
-import HeaderNav from '@/components/header-nav'
+import headernav2 from '@/components/header-nav-start-class'
 // 引入分页组件页面
 import Pager from '@/components/pager'
 // 引入一些工具
@@ -131,7 +131,7 @@ import { baseUrl, toast, confirm } from '@/utils/global'
 export default {
   name: 'AuthorizationPackageReleased',
   components: {
-    'header-nav': HeaderNav,
+    'header-nav2': headernav2,
     'pager': Pager
   },
   filters: {

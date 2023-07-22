@@ -8,7 +8,7 @@
       <div class="location">
         <div class="localtion-title"><b>当前位置:</b></div>
         <ul class="localtion-list">
-          <li class="localtion-item" style="cursor: pointer" @click="toback('/')">
+          <li class="localtion-item" style="cursor: pointer" @click="toback('/begin-class')">
             管理看板
           </li>
           <li class="localtion-item" style="cursor: pointer" @click="toback('/my-bookshelf/my-bookshelf')">
@@ -28,25 +28,7 @@
     <div class="teaching-material wind-1240 pkg-page-center-min-height">
       <div v-if="zNodes && zNodes.length > 0" :style="isShowLeftChapter ? '' : 'width:0;'" class="left-teaching-material-catalogue">
         <div id="left-nav" class="serachLibrary catalogue">
-          <ztree-library
-            ref="ztreeLibrary"
-            :z-nodes="zNodes"
-            :pkg-id="bookshelfReadData.pkgId"
-            :is-show-rmenu="false"
-            :has-permission="false"
-            :has-permission-actual="false"
-            :has-set-visible-permission="false"
-            :is-together-build="false"
-            :is-creator="false"
-            :is-classroom-detail="true"
-            :is-from-bookshelf="true"
-            private-use="Y"
-            id-key="id"
-            p-id-key="parentId"
-            name="chapterName"
-            ztree-id="treeDemo"
-            @showLibraryForm="showLibraryForm"
-          />
+          <ztree-library ref="ztreeLibrary" :is-from-bookshelf="true" :z-nodes="zNodes" id-key="id" p-id-key="parentId" name="chapterName" ztree-id="treeDemo" @showLibraryForm="showLibraryForm"/>
         </div>
       </div>
       <!-- 左侧章节收缩begin -->
@@ -121,9 +103,9 @@
 <script type="text/javascript">
 
 import tinyMCE from 'tinymce/tinymce'
-import $ from '@/assets/jquery-vendor'
-import HeaderNav from '@/components/header-nav'
-import ZtreeLibrary from '@/components/ztree-library-new'
+import $ from 'jquery'
+import HeaderNav from '@/components/header-nav-start-class'
+import ZtreeLibrary from '@/components/ztree-library'
 import CbEditor from '@/components/cb-editor'
 import { toast } from '@/utils/global'
 
@@ -248,6 +230,12 @@ export default {
       }
       const params = JSON.parse(JSON.stringify(this.teachingExtraInfo))
       delete params.resId
+      //  let params = {
+      //   ctId: (event.attributes.ctid && event.attributes.ctid.value) ? (event.attributes.ctid.value) : '',
+      //   pkgId: (event.attributes.pkgid && event.attributes.pkgid.value) ? (event.attributes.pkgid.value) : '',
+      //   subjectId: (event.attributes.subjectid && event.attributes.subjectid.value) ? (event.attributes.subjectid.value) : '',
+      //   chapterId: (event.attributes.chapterid && event.attributes.chapterid.value) ? (event.attributes.chapterid.value) : '',
+      // }
       let url = ''
       if (event.tagName && event.tagName === 'AUDIO') {
         url = 'viewAudio'
@@ -312,7 +300,6 @@ export default {
     showLibraryForm(data) {
       if (data.type === 'subject') { // 课堂节点目前是没有分组的
         this.isShowEditor = false
-        this.pkgResGroupList = []
       } else {
         this.isShowEditor = true
       }
@@ -320,6 +307,9 @@ export default {
       if (document.querySelector('.left-teaching-material-catalogue') && document.querySelector('.left-teaching-material-catalogue').offsetHeight) {
         this.editHeight = document.querySelector('.left-teaching-material-catalogue').offsetHeight - 35
       }
+      // if (document.querySelector('#left-nav') && document.querySelector('#left-nav').offsetHeight) {
+      //   this.editHeight = document.querySelector('#left-nav').offsetHeight //  - 35
+      // }
       this.viewChapterInfo(data.chapterId)
     },
     /** 点击查看章节、分组、资源 */
@@ -332,7 +322,6 @@ export default {
       const params = {
         chapterId: chapterId
       }
-      this.currentClickIndex = 0
       this.$api.pkgInfo.viewBookChapterInfo(params).then((res) => {
         if (res.code === 0) {
           this.pkgResGroupList = res.data.pkgResGroupList
@@ -348,49 +337,23 @@ export default {
     /** 分组前后切换，编辑器预览的章节切换， true为下一章  false为上一章  操作 */
     chaptersSwitch(value) {
       if (value) {
-        if (this.pkgResGroupList.length !== 0 && this.pkgResGroupList.length - 1 > this.currentClickIndex && this.pkgResGroupList[this.currentClickIndex + 1].dictCode !== '2') { // 下一组
-          this.handleCutGroup(this.currentClickIndex + 1, this.pkgResGroupList[this.currentClickIndex + 1])
-        } else if (this.pkgResGroupList.length !== 0 && this.pkgResGroupList.length > this.currentClickIndex + 2 && this.pkgResGroupList[this.currentClickIndex + 1].dictCode === '2') { // 下下组
-          this.handleCutGroup(this.currentClickIndex + 2, this.pkgResGroupList[this.currentClickIndex + 2])
-        } else { // 下一章
-          for (let i = 0; i < this.allChapterId.length; i++) {
-            if (this.allChapterId[i] === this.chapterId && i < this.allChapterId.length - 1) {
-              this.$refs.ztreeLibrary.selectNode(this.allChapterId[i + 1])
-              setTimeout(() => {
-                if (this.pkgResGroupList.length === 0 || this.pkgResGroupList[0].dictCode === '2') {
-                  this.chaptersSwitch(true)
-                }
-              }, 500)
-              break
-            } else if (this.allChapterId[i] === this.chapterId && i === this.allChapterId.length - 1) {
-              toast('这是最后一个分组了，不能再往下了')
-              break
-            }
+        for (let i = 0; i < this.allChapterId.length; i++) {
+          if (this.allChapterId[i] === this.chapterId && i < this.allChapterId.length - 1) {
+            this.$refs.ztreeLibrary.selectNode(this.allChapterId[i + 1])
+            return false
+          } else if (this.allChapterId[i] === this.chapterId && i === this.allChapterId.length - 1) {
+            toast('这是最后一个章节了，不能再往下了')
+            return false
           }
         }
       } else {
-        if (this.pkgResGroupList.length !== 0 && this.currentClickIndex > 0 && this.pkgResGroupList[this.currentClickIndex - 1].dictCode !== '2') { // 上一组
-          this.handleCutGroup(this.currentClickIndex - 1, this.pkgResGroupList[this.currentClickIndex - 1])
-        } else if (this.pkgResGroupList.length !== 0 && this.currentClickIndex > 1 && this.pkgResGroupList[this.currentClickIndex - 1].dictCode === '2') { // 上上组
-          this.handleCutGroup(this.currentClickIndex - 2, this.pkgResGroupList[this.currentClickIndex - 2])
-        } else { // 上一章
-          for (let i = 0; i < this.allChapterId.length; i++) {
-            if (this.allChapterId[i] === this.chapterId && i > 1) {
-              this.$refs.ztreeLibrary.selectNode(this.allChapterId[i - 1])
-              setTimeout(() => {
-                if (this.pkgResGroupList.length > 0 && this.pkgResGroupList[this.pkgResGroupList.length - 1].dictCode !== '2') {
-                  this.handleCutGroup(this.pkgResGroupList.length - 1, this.pkgResGroupList[this.pkgResGroupList.length - 1])
-                } else if (this.pkgResGroupList.length > 1 && this.pkgResGroupList[this.pkgResGroupList.length - 1].dictCode === '2') {
-                  this.handleCutGroup(this.pkgResGroupList.length - 2, this.pkgResGroupList[this.pkgResGroupList.length - 2])
-                } else if (this.pkgResGroupList.length === 0 || this.pkgResGroupList[0].dictCode === '2') {
-                  this.chaptersSwitch(false)
-                }
-              }, 500)
-              break
-            } else if (this.allChapterId[i] === this.chapterId && i === 1) {
-              toast('这是第一个分组了，不能再往上了')
-              break
-            }
+        for (let i = 0; i < this.allChapterId.length; i++) {
+          if (this.allChapterId[i] === this.chapterId && i > 1) {
+            this.$refs.ztreeLibrary.selectNode(this.allChapterId[i - 1])
+            return false
+          } else if (this.allChapterId[i] === this.chapterId && i === 1) {
+            toast('这是第一个章节了，不能再往上了')
+            return false
           }
         }
       }
@@ -410,6 +373,14 @@ export default {
           vm.load(vm.index, vm.childidx)
         }
       })
+
+      // if (document.querySelector('.left-teaching-material-catalogue') && document.querySelector('.left-teaching-material-catalogue').offsetHeight) {
+      //   vm.editHeight = document.querySelector('.left-teaching-material-catalogue').offsetHeight - 35
+      // }
+
+      // if (document.querySelector('#left-nav') && document.querySelector('#left-nav').offsetHeight) {
+      //   vm.editHeight = document.querySelector('#left-nav').offsetHeight //  - 35
+      // }
     },
     // 编辑工具栏浮动
     onScroll() {
@@ -574,7 +545,7 @@ export default {
         width: 100%;
         height: 100%;
         /* height: 610px; */
-        background-color: #fff;
+        /* background-color: #fff; */
         /* padding-top:8px; */
     }
     .notContent-describe{

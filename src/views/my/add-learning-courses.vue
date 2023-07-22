@@ -108,9 +108,8 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
 import { baseUrl, toast, alert } from '@/utils/global'
-import HeaderNav from '@/components/header-nav'
+import HeaderNav from '@/components/header-nav-start-class'
 import dragVerify from 'vue-drag-verify'
 export default {
   name: 'AddLearningCourses',

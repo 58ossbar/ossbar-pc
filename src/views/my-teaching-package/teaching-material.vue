@@ -1,7 +1,8 @@
 <!-- 活教材显示页面 -->
 <template>
-  <!--活教材-->
-  <div :class="['teaching-material', isClassroomDetail?'':'teaching-material-two']">
+  <!--活教材 -->
+  <!-- , isClassroomDetail?'':'teaching-material-two' -->
+  <div :class="['teaching-material']">
     <div :style="isShowLeftChapter ? '' : 'width:0;'" class="left-teaching-material-catalogue">
       <div id="left-nav" class="serachLibrary catalogue">
         <ztree-library
@@ -17,6 +18,8 @@
           :is-creator="isCreator"
           :is-classroom-detail="isClassroomDetail"
           :private-use="privateUse"
+          :books-visibled-list="booksVisibledList"
+          :has-set-book-visible-permission="hasSetBookVisiblePermission"
           id-key="id"
           p-id-key="parentId"
           name="chapterName"
@@ -25,6 +28,8 @@
           @removeSucc="removeSucc"
           @setTraineesVisibleBatch="setTraineesVisibleBatch"
           @setCreateDefaultChapter="setCreateDefaultChapter"
+          @bookSelectChange="bookSelectChange"
+          @setBooksVisibleBatch="setBooksVisibleBatch"
         />
       </div>
     </div>
@@ -36,7 +41,7 @@
     </div>
     <!-- 左侧章节收缩end -->
     <div :style="isShowLeftChapter ? '' : 'width:100%'" class="right-teaching-material-con">
-      <div v-if="isClassroomDetail && ifShowClassroomIntroNew"><h4>课堂简介</h4><br>{{ classroomIntro }}</div>
+      <div v-if="isClassroomDetail && ifShowClassroomIntro"><h4>课堂简介</h4><br>{{ classroomIntro }}</div>
       <div v-show="(hasPermission && hasNodePermission && hasPermissionActual) || (pkgResGroupList.length > 0)" class="header-nav">
         <!--资源分组 begin-->
         <div
@@ -100,9 +105,25 @@
             style="display: inline-block;line-height: 39px;">请先添加分组</span>
         </div>
         <!-- +号 end -->
+        <!--保存按钮 begin -->
+        <!-- <div
+          v-if="hasPermission && hasNodePermission && isShowTinyMce && hasPermissionActual"
+          class="save-btn">
+          <el-button
+            icon="el-icon-s-platform"
+            size="mini"
+            type="primary"
+            class="btn btn-primary"
+            @click="handleSaveResource">保存
+          </el-button>
+        </div> -->
+        <!--保存按钮 end -->
       </div>
+      <!--{{isCreator}}{{hasNodePermission}}-->
+      <!-- <div v-if="pkgResGroupList.length <= 0 && hasPermission" class="right-tip">温馨提示！点击左侧节点，编辑内容</div> -->
       <!--创建者或有权限时-->
-      <div v-if="isShowTinyMce" :class="['teaching-package-editor',isHideNavOnScroll?'teachingCenterBoxHideNavOnScroll':'', isClassroomDetail?'':'teaching-package-editor-two']">
+      <!-- class="teaching-package-editor"  , isClassroomDetail?'':'teaching-package-editor-two' -->
+      <div v-if="isShowTinyMce" :class="['teaching-package-editor',isHideNavOnScroll?'teachingCenterBoxHideNavOnScroll':'']">
         <cb-editor
           ref="cbEditor"
           :height="editHeight"
@@ -117,15 +138,46 @@
           :data-form="saveResourceData"
           :is-need-content-navigation="true"
           :is-show-save-chapter-btn="hasPermission && hasNodePermission && isShowTinyMce && hasPermissionActual"
-          :custom-content-navigation-style="isClassroomDetail?'':'max-height:' + (editHeight+ 47 + 15 + 36) + 'px'"
           class="chapterEditor"
           name="resContent"
           @audioOrVideoEnded="audioOrVideoEnded"
           @chapterReadEnded="chapterReadEnded"
           @ctrlS="ctrlS"
         />
+        <!-- :custom-content-navigation-style="isClassroomDetail?'':'max-height:' + (editHeight+ 47 + 15 + 36) + 'px'" -->
       </div>
+      <!--非创建者且为共建者时且有节点权限时-->
+      <!-- <div class="teaching-package-editor" v-if="hasPermission && isShowTinyMce && !isCreator && !hasNodePermission">
+              <cb-editor
+                :height="editHeight"
+                class="chapterEditor"
+                ref="cbEditor"
+                name="resContent"
+                :editReadOnly="!hasNodePermission"
+                :isCopy="isCopy"
+                :toolStr="toolStr"
+                :show-image-button="hasPermissionActual"
+                :show-media-button="hasPermissionActual"
+                :mediaIsPreview="hasPermission?'false':'true'"
+                :dataForm="saveResourceData"
+              ></cb-editor>
+            </div>
+            <div class="teaching-package-editor" v-if="!hasPermission && isShowTinyMce">
+              <cb-editor
+                :height="editHeight"
+                ref="cbEditor"
+                class="chapterEditor"
+                name="resContent"
+                :isCopy="isCopy"
+                :editReadOnly="!hasNodePermission"
+                :show-image-button="hasPermissionActual"
+                :show-media-button="hasPermissionActual"
+                :mediaIsPreview="hasPermission?'false':'true'"
+                :dataForm="saveResourceData"
+                :toolStr="toolStr"></cb-editor>
+            </div> -->
       <!--引入活动模块 begin -->
+
       <activity-library
         v-if="!isShowTinyMce && isShowActivityPage"
         ref="activity"
@@ -136,6 +188,7 @@
         :chapter-id="chapterId"
         :has-permission="hasPermission"
         :is-classroom-detail="isClassroomDetail"
+        :style="{height: editHeight + 'px', minHeight: editHeight + 'px'}"
         class="teaching-package-editor-activity"
       />
       <!--引入活动模块 end -->
@@ -251,15 +304,14 @@
           id="chapter-tree-for-visible"
           :z-nodes="zNodesForVisible"
           :check="true"
-          :parent-vue="{}"
           id-key="chapterId"
           p-id-key="parentId"
           name="chapterName"
           width="50"
           label-check
           expand-level="1"
+          @onclick="onclick"
         />
-        <!-- @onclick="onclick" -->
       </div>
     </modal-dialog>
     <!--批量设置章节对学员是否可见end-->
@@ -318,6 +370,94 @@
     </div>
     <!--设置默认生成的章节end-->
 
+    <!--批量设置章节对学员是否可见begin-->
+    <modal-dialog
+      id="set-book-visible"
+      ref="bookVisibleModal"
+      :is-show-footer-btn="false"
+      title="关联 课外教材/辅教材"
+      @cancel="handleBookVisibleCancel">
+      <div slot="main">
+        <div class="main-top classroom-member-box">
+          <div class="search-box">
+            <el-input
+              v-model="setBookVisiblePager.subjectName"
+              placeholder="搜索"
+              size="small"
+              suffix-icon="el-icon-search"
+              @change="getBooksAllList"
+              @keyup.enter.native="getBooksAllList"/>
+          </div>
+        </div>
+        <div class="main-list-top">
+          <div class="left-operation-box">
+            <div class="Check-all" @click="handleCheckAllBookVisible">
+              <input v-model="isCheckAllBookVisible" type="checkbox">
+              <span>全选</span>
+            </div>
+            <div class="selected-member-num">共{{ setBookVisiblePager.totalCount }}本/已选择{{ booksSelectedList.length }}本</div>
+          </div>
+          <div class="sure-btn" @click="setBookVisibleConfirm">设置</div>
+        </div>
+
+        <div v-if="booksAllList.length>0" class="main-list ">
+          <div
+            v-for="(item, index) in booksAllList"
+            :key="index"
+            :title="'书名：'+item.subjectName+'\n作者：'+(item.subjectAuthor || '')+'\n版本号：'+(item.pkgVersion || '')"
+            class="main-list-items"
+            @click="handleSelectBookVisible(item)">
+            <div class=" cb-video-l ">
+              <div class="cb-bookbox" >
+                <div class="tg-postbook">
+                  <figure class="tg-featureimg">
+                    <div v-if="item.pic" class="tg-bookimg">
+                      <div class="tg-frontcover"><img :src="item.pic" :onerror="logo" alt="image description"></div>
+                      <div class="tg-backcover"><img :src="item.pic" :onerror="logo" alt="image description"></div>
+                    </div>
+                    <div v-else class="tg-bookimg">
+                      <div class="tg-frontcover">
+                        <img src="static/creatorblue/img/wk1.jpg" alt="image description">
+                      </div>
+                      <div class="tg-backcover">
+                        <img src="static/creatorblue/img/wk1.jpg" alt="image description">
+                      </div>
+                    </div>
+                  </figure>
+                </div>
+                <img class="img-fluid" src="static/creatorblue/img/wkbg.png">
+              </div>
+              <div class="cb-bookbox-name displayFlex flexCenter">
+                <div class="font-weight-bolder" style="width: 100%;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;text-align: center;">{{ item.subjectName }}</div>
+              </div>
+              <div class="cb-bookbox-author-num displayFlex flexCenter">
+                <span class="cb-bookbox-author"><span v-if="item.subjectAuthor">{{ item.subjectAuthor }} 著</span></span>
+                <span class="cb-bookbox-num">{{ item.pkgVersion || '' }}</span>
+              </div>
+            </div>
+            <input v-model="item.isSelect" type="checkbox">
+          </div>
+
+        </div>
+
+        <div v-if="booksAllList.length <=0" class="no-data-hint" style="margin: 20px 0;">
+          <img src="static/image/manage_board/nodate.svg" alt="">
+          <p>暂无数据</p>
+        </div>
+        <div >
+          <pager
+            v-if="setBookVisiblePager.totalPage"
+            :page-size-prop="setBookVisiblePager.pageSizeProp"
+            :curr-page="setBookVisiblePager.currPage"
+            :total-page="setBookVisiblePager.totalPage"
+            align="center"
+            @changeIndex="changeBookVisibleIndex"
+          />
+        </div>
+      </div>
+    </modal-dialog>
+    <!--批量设置章节对学员是否可见end-->
+
     <!-- 图片预览标签 begin -->
     <div v-viewer class="accessory-viewer" style="display: none;">
       <img :src="viewerImgSrc" alt>
@@ -329,21 +469,22 @@
 
 <script>
 import tinyMCE from 'tinymce/tinymce'
-import $ from '@/assets/jquery-vendor'
+import $ from 'jquery'
 import ZtreeLibrary from '@/components/ztree-library-new'
 import CbEditor from '@/components/cb-editor'
 import activityLibrary from '@/views/activity/index'
-import { toast, confirm, formVaildStyle, formInVaildStyle } from '@/utils/global'
+import { toast, confirm, formVaildStyle, formInVaildStyle, concatImgUrl } from '@/utils/global'
 import ModalDialog from '@/components/modal-dialog'
 import CbTree from '@/components/cb-tree'
+import Pager from '@/components/pager'
 export default {
-  name: 'TeachingMaterial',
   components: {
     'ztree-library': ZtreeLibrary,
     'cb-editor': CbEditor,
     'activity-library': activityLibrary,
     'modal-dialog': ModalDialog,
-    'cb-tree': CbTree
+    'cb-tree': CbTree,
+    'pager': Pager
   },
   filters: {
     filterActivityState(value) {
@@ -407,7 +548,20 @@ export default {
   },
   data() {
     return {
-      ifShowClassroomIntroNew: true,
+      isOneOpenSetBooks: true, // 是否第一次打开  课外教材 授权 选择 弹窗
+      logo: 'this.src="' + 'static/creatorblue/img/wk1.jpg' + '"', // 默认图片
+      isCheckAllBookVisible: false, // 课外教材 授权时 选择弹窗 -- 是否 全选
+      booksSelectedList: [], //  课外教材 授权时 选择的 id 数组
+      booksAllList: [], // 所有  课外教材 数组
+      setBookVisiblePager: {
+        currPage: 1, // 当前页
+        totalPage: null, // 总页数
+        pageSizeProp: 12, // 分页大小
+        pageSize: 12, // 分页大小
+        subjectName: '',
+        totalCount: 0
+      },
+      booksVisibledList: [], // 已授权的  课外教材 数组
       chapterNameList: [{ seId: '', name: '' }, { seId: '', name: '' }, { seId: '', name: '' }],
       hasSetVisiblePermission: false,
       viewerImgSrc: '', // 图片预览src
@@ -464,11 +618,24 @@ export default {
     }
   },
   watch: {
-    ifShowClassroomIntro: {
-      handler(newVal, oldVal) {
-        this.ifShowClassroomIntroNew = newVal
-      },
-      immediate: true
+    'booksAllList': function(nValue) {
+      if (this.booksSelectedList.length > 0) {
+        this.booksSelectedList.map(item => {
+          nValue.map(newItem => {
+            if (item === newItem.subjectId) {
+              newItem.isSelect = true
+            }
+          })
+        })
+      }
+      if (nValue.length > 0) {
+        const isexistNoSelect = nValue.filter(item => item.isSelect === false).length > 0
+        if (isexistNoSelect) {
+          this.isCheckAllBookVisible = false
+        } else {
+          this.isCheckAllBookVisible = true
+        }
+      }
     },
     currentClickIndex() {
       if (this.pkgResGroupList[this.currentClickIndex].isCanCopy) {
@@ -508,21 +675,221 @@ export default {
   },
   created() {
     this.isShowPage()
+    const that = this
+    window.eventBus.$on('eventBusReceivedMsgData', function(data) {
+      const res = data
+      if (res.busitypeIndexNew === 20 && !that.isCreator) { // 获取消息主界面列表数据
+        if (res.code === 0) {
+          if (res.data && res.data.msg && res.data.msg.ctId && localStorage.getItem('ct_id') && localStorage.getItem('ct_id') === res.data.msg.ctId) {
+            if (res.data.msg.pkgId) {
+              that.pkgId = res.data.msg.pkgId
+              localStorage.setItem('pkgId', res.data.msg.pkgId)
+            }
+            if (res.data.msg.subjectId) {
+              that.subjectId = res.data.msg.subjectId
+              localStorage.setItem('subjectId', res.data.msg.subjectId)
+            }
+            // 重新加载本页面
+            // window.location.reload()
+            // 重新加载左侧树形数据
+            const ele = document.getElementById('nav-profile-tab')
+            if (ele) {
+              ele.click()
+            }
+
+            // let params = {
+            //   pkgId: that.pkgId,
+            //   subjectId: that.subjectId
+            // }
+            // that.$api.pkgInfo.getBookTreeData(params).then((res) => {
+            //   if (res.code == 0) {
+            //     that.zNodes = [];
+            //     that.zNodes.push(res.data);
+            //     that.isCreator = res.data.isCreator
+            //     that.isTogetherBuild = res.data.isTogetherBuild
+            //   }
+            // });
+          }
+        }
+      }
+    })
   },
   mounted() {
     this.mountedInit()
     window.addEventListener('scroll', this.onScroll)
   },
-  updated() {
+  updated: function() {
     this.$nextTick(function() {
       $('#defaultId').selectpicker('refresh')
     })
   },
-  destroyed() {
+  destroyed: function() {
     $('#defaultId').selectpicker('destroy')
     window.removeEventListener('scroll', this.onScroll)
   },
   methods: {
+    // 选择 课外教材 的 change 事件
+    bookSelectChange(subjectId, pkgId) {
+      // let pkgId = ''
+      // if (this.booksVisibledList && this.booksVisibledList.length > 0) {
+      //   for (let i = 0; i < this.booksVisibledList.length; i++) {
+      //     if (this.booksVisibledList[i].subjectId === subjectId) {
+      //       pkgId = this.booksVisibledList[i].pkgId
+      //       break
+      //     }
+      //   }
+      // }
+      this.pkgId = pkgId
+      this.getBookTreeDataNew(pkgId, subjectId)
+    },
+    // 获取 已授权的  课外教材 数组
+    getBooksVisibledList() {
+      this.$api.classroom.findExtraBooks({ ctId: this.ctId }).then((res) => {
+        if (res.code === 0) {
+          this.booksVisibledList = res.data
+        }
+      })
+    },
+    setBookVisibleConfirm() {
+      // if (!this.booksSelectedList || this.booksSelectedList.length < 1) {
+      //   toast('请选择关联 课外教材/辅教材')
+      //   return false
+      // }
+      const commitData = {
+        ctId: this.ctId,
+        subjectList: []
+      }
+      if (this.booksAllList && this.booksAllList.length > 0) {
+        this.booksAllList.forEach(ele => {
+          for (let i = 0; i < this.booksSelectedList.length; i++) {
+            if (this.booksSelectedList[i] === ele.subjectId) {
+              commitData.subjectList.push({ subjectId: ele.subjectId, pkgId: ele.pkgId })
+              break
+            }
+          }
+        })
+      }
+      this.$api.classroom.saveExtraBooksRelation(commitData).then(res => {
+        toast(res.msg)
+        if (res.code === 0) {
+          // 关闭弹窗
+          $('#set-book-visible').modal('hide')
+          this.getBooksVisibledList()
+        }
+      })
+    },
+    // 打开批量设置 课外教材  是否可下拉选择的窗口
+    setBooksVisibleBatch() {
+      this.setBookVisiblePager.subjectName = ''
+      this.booksSelectedList = []
+      this.isOneOpenSetBooks = true
+      this.getBooksAllList(false)
+      $('#set-book-visible').modal('show')
+      $('.modal-dialog').css('max-width', '942px').css('margin-top', '5vh')
+    },
+    getBooksAllList(isLazy = false) {
+      if (!isLazy) {
+        this.setBookVisiblePager.currPage = 1
+      }
+      // this.booksAllList = []
+      const obj = {
+        ctId: this.ctId,
+        subjectName: this.setBookVisiblePager.subjectName,
+        pageNum: this.setBookVisiblePager.currPage,
+        pageSize: this.setBookVisiblePager.pageSize
+      }
+      this.$api.classroom.queryExtraBooks(obj).then((res) => {
+        if (res.code === 0) {
+          this.setBookVisiblePager.totalCount = res.data.totalCount
+          this.setBookVisiblePager.totalPage = res.data.totalPage
+          // 渲染 已关联的  课外教材
+          if (this.isOneOpenSetBooks && res.subjectIdList && res.subjectIdList.length > 0) {
+            this.isOneOpenSetBooks = false
+            res.subjectIdList.map(item => {
+              let temp = true
+              for (let i = 0; i < this.booksSelectedList.length; i++) {
+                if (this.booksSelectedList[i] === item) {
+                  temp = false
+                  break
+                }
+              }
+              if (temp) {
+                this.booksSelectedList.push(item)
+              }
+            })
+          }
+          // 渲染 所有 课外教材
+          this.booksAllList = res.data.list || []
+          this.booksAllList.forEach(ele => {
+            ele.isSelect = false
+            ele.pic = concatImgUrl(ele.pkgLogo)
+          })
+          this.$forceUpdate()
+        }
+      }).catch(() => {
+        this.booksAllList = []
+      })
+    },
+    handleBookVisibleCancel() {
+      $('#set-book-visible').modal('hide')
+    },
+    // 未加入课堂学员列表更新分页数据
+    changeBookVisibleIndex(value, size) {
+      this.setBookVisiblePager.currPage = value
+      this.setBookVisiblePager.pageSize = size
+      this.getBooksAllList(true)
+    },
+    // 选中/取消未加入课堂小组成员
+    handleSelectBookVisible(item, index) {
+      if (item.isSelect) {
+        for (let i = 0; i < this.booksSelectedList.length; i++) {
+          if (item.subjectId === this.booksSelectedList[i]) {
+            this.booksSelectedList.splice(i, 1)
+          }
+        }
+        item.isSelect = false
+      } else {
+        item.isSelect = true
+        this.booksSelectedList.push(item.subjectId)
+      }
+      if (this.booksAllList.length > 0) {
+        const isexistNoSelect = this.booksAllList.filter(item => item.isSelect === false).length > 0
+        if (isexistNoSelect) {
+          this.isCheckAllBookVisible = false
+        } else {
+          this.isCheckAllBookVisible = true
+        }
+      }
+    },
+    // 全选/取消全选  课外教材 数组
+    handleCheckAllBookVisible() {
+      if (this.isCheckAllBookVisible) {
+        this.isCheckAllBookVisible = false
+        this.booksAllList.map(item => {
+          item.isSelect = false
+          for (let i = 0; i < this.booksSelectedList.length; i++) {
+            if (this.booksSelectedList[i] === item.subjectId) {
+              this.booksSelectedList.splice(i, 1)
+              i--
+            }
+          }
+        })
+      } else {
+        this.isCheckAllBookVisible = true
+        this.booksAllList.map(item => {
+          item.isSelect = true
+          let temp = true
+          for (let i = 0; i < this.booksSelectedList.length; i++) {
+            if (this.booksSelectedList[i] === item.subjectId) {
+              temp = false
+            }
+          }
+          if (temp) {
+            this.booksSelectedList.push(item.subjectId)
+          }
+        })
+      }
+    },
     ctrlS() {
       if (this.hasNodePermission) {
         this.handleSaveResource()
@@ -659,10 +1026,19 @@ export default {
     },
     /** 页面初始数据的方法  */
     isShowPage: function() {
-      this.addGroupInfo.pkgId = this.pkgId
+      // 如果是课堂详情页面里
+      if (this.isClassroomDetail) {
+        // 获取 已授权的  课外教材 数组
+        this.getBooksVisibledList()
+      }
+      this.getBookTreeDataNew(this.pkgId, this.subjectId)
+      // this.getBookTreeDataNew(localStorage.getItem('pkgId'), localStorage.getItem('subjectId'))
+    },
+    getBookTreeDataNew(pkgId, subjectId) {
+      this.addGroupInfo.pkgId = pkgId
       const params = {
-        pkgId: this.pkgId,
-        subjectId: this.subjectId
+        pkgId: pkgId,
+        subjectId: subjectId
       }
       // 如果是课堂详情页面里
       if (this.isClassroomDetail) {
@@ -682,6 +1058,7 @@ export default {
           this.isCreator = res.data.isCreator
           this.isTogetherBuild = res.data.isTogetherBuild
           this.hasSetVisiblePermission = res.data.hasSetVisiblePermission
+          this.hasSetBookVisiblePermission = res.data.hasSetBookVisiblePermission
         }
       })
       this.mountedInit()
@@ -766,7 +1143,7 @@ export default {
         }
       })
       if (document.querySelector('#left-nav') && document.querySelector('#left-nav').offsetHeight) {
-        vm.editHeight = document.querySelector('#left-nav').offsetHeight - (vm.isClassroomDetail ? 130 : 54) // - 130
+        vm.editHeight = document.querySelector('#left-nav').offsetHeight - 54 // (vm.isClassroomDetail ? 130 : 54)
       }
     },
     // 设置滚动条高度
@@ -1107,7 +1484,7 @@ export default {
     },
     // 左则树节点点击事件
     showLibraryForm(data) {
-      this.ifShowClassroomIntroNew = false
+      this.ifShowClassroomIntro = false
       // 章节节点是否有权限
       this.hasNodePermission = data.treeNode.hasPermission
       if (data.type === 'subject') {
@@ -1165,15 +1542,15 @@ export default {
           this.addGroupInfo.chapterId = this.chapterInfo.chapterId
         }
       }
-      this.$nextTick(() => {
-        if (!this.isClassroomDetail && document.querySelector('#left-nav') && document.querySelector('#left-nav').offsetHeight) {
-          this.editHeight = document.querySelector('#left-nav').offsetHeight - 54 // - 130
-          // 动态更改编辑器的高度
-          if (this.$el.querySelector('.teaching-package-editor .tox') && (this.$el.querySelector('.teaching-package-editor .tox').className).indexOf('fullscreen') < 0) {
-            this.$el.querySelector('.teaching-package-editor .tox').style.height = this.editHeight + 'px'
-          }
-        }
-      })
+      // this.$nextTick(() => {
+      //   if (!this.isClassroomDetail && document.querySelector('#left-nav') && document.querySelector('#left-nav').offsetHeight) {
+      //     this.editHeight = document.querySelector('#left-nav').offsetHeight - 54 // - 130
+      //     // 动态更改编辑器的高度
+      //     if (this.$el.querySelector('.teaching-package-editor .tox') && (this.$el.querySelector('.teaching-package-editor .tox').className).indexOf('fullscreen') < 0) {
+      //       this.$el.querySelector('.teaching-package-editor .tox').style.height = this.editHeight + 'px'
+      //     }
+      //   }
+      // })
     },
     // 清空
     clearSaveResourceData() {
@@ -1480,7 +1857,88 @@ export default {
     /*批量设置章节是否可见的滚动条*/
     .chapter-visible-pre-content {
       height: 500px;
+      /* overflow: hidden;
+      overflow-y: scroll; */
+    }
+
+    .main-top{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .main-top .search-box{
+        width: 100%;
+        margin: 10px 0 20px;
+    }
+    .main-list-top{
+        display: flex;
+        justify-content: space-between;
+        background-color: #eff3f3;
+        padding: 10px;
+    }
+    .main-list-top .left-operation-box{
+        display: flex;
+        align-items: center;
+    }
+    .main-list-top .left-operation-box .selected-member-num{
+        color: #999;
+        margin-left: 20px;
+    }
+    .main-list-top .sure-btn{
+        color: #007bff;
+        cursor: pointer;
+    }
+    .main-list{
+      min-height: 228px;
+      max-height: 50vh;
+      overflow-y: auto;
+      flex-wrap: wrap;
+      display: flex;
+      box-sizing: border-box;
+    }
+    .main-list .main-list-items{
+        overflow: hidden;
+        position: relative;
+        /* width: 18%; */
+        width: calc( 100% / 6 - 10px);
+        height: fit-content;
+        padding: 10px 10px 0 10px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        /* margin: 10px 11px 5px; */
+       margin: 10px 10px 0 0;
+        position: relative;
+        transition: all 0.75s;
+        box-shadow: 0px 0px 5px rgba(0,0,0,0.2); /*opera或ie9*/
+        -moz-box-shadow: 0px 0px 5px rgba(0,0,0,0.2); /*firefox*/
+        -webkit-box-shadow: 0px 0px 5px rgba(0,0,0,0.2);/* webkit*/
+    }
+    .main-list .main-list-items:hover{
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.35); /*opera或ie9*/
+        -moz-box-shadow: 0px 0px 10px rgba(0,0,0,0.35); /*firefox*/
+        -webkit-box-shadow: 0px 0px 10px rgba(0,0,0,0.35);/* webkit*/
+    }
+    .main-list .main-list-items input{
+      position: absolute;
+      right: 3px;
+      top: 3px;
+      z-index: 5;
+    }
+    .main-list .main-list-items .cb-bookbox-author-num{
+      justify-content: flex-end;
+    }
+     .main-list .main-list-items .cb-bookbox-author,
+    .main-list .main-list-items .cb-bookbox-num{
       overflow: hidden;
-      overflow-y: scroll;
+      text-overflow:ellipsis;
+      white-space: nowrap;
+    }
+    .main-list .main-list-items .cb-bookbox-author{
+      width: 60%;
+      text-align: left;
+    }
+    .main-list .main-list-items .cb-bookbox-num{
+      width: 39%;
+      text-align: right;
     }
 </style>

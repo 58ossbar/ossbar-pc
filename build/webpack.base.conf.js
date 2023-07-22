@@ -28,6 +28,10 @@ module.exports = {
     })
   ],
   externals: {
+    'vue': 'Vue',
+    'element-ui': 'Element',
+    'bootstrap-vue': 'BootstrapVue',
+    'v-charts': 'VCharts'
   },
   context: path.resolve(__dirname, '../'),
   entry: {

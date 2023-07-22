@@ -8,7 +8,6 @@
 <script>
 import echarts from 'echarts'
 export default {
-  name: 'Gauge',
   components: {
 
   },

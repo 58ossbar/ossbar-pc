@@ -235,6 +235,15 @@ export const updateTraineeInfo = data => {
   })
 }
 
+// 获取属于当前教师的课堂
+export const queryClassroomList = params => {
+  return axios({
+    url: '/classroom-api/queryClassroomList',
+    method: 'get',
+    params
+  })
+}
+
 // 一键添加课堂成员
 export const oneClickToJoinClassroom = (params, data) => {
   return axios({

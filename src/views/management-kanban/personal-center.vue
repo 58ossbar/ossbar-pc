@@ -4,6 +4,28 @@
     <div class="begin-class-con wind-1240">
       <div class="left-function color-000">
         <h2 class="user-name">{{ getTimeGreat }}，{{ basicInfo.traineeName }}</h2>
+        <div class="news">
+          <!--<p class="title">您有{{msgNum}}条消息</p>-->
+          <div class="news-con">
+            <img src="static/image/info_1.png" alt="消息">
+            <div class="carousel">
+              <ul
+                :class="{animate_top:animate}"
+                class="news-list">
+                <li
+                  v-for="(listNew,index) in listNews"
+                  :data-id="listNew.categoryId"
+                  :key="index"
+                  style="cursor: pointer"
+                  @click="toNewsread(listNew.newsid)">{{ listNew.newTitle }}</li>
+              </ul>
+            </div>
+            <div class="detail" @click="getAllNews">
+              <span>了解更多</span>
+              <img src="static/image/arrow_1.png" alt="">
+            </div>
+          </div>
+        </div>
         <div class="entrance">
           <p class="title">常用入口</p>
           <ul class="entrance-list">
@@ -25,7 +47,7 @@
                 <div class="entrance-item-label-dec hide_double">查看课堂中的所有活教材和云盘文件</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleBlog">
               <img src="static/image/manage_board/blog.png" alt="我的博客">
               <!-- <span>我的博客</span> -->
 
@@ -34,7 +56,7 @@
                 <div class="entrance-item-label-dec hide_double">记录学习过程心得和技术点滴</div>
               </div>
             </li>
-            <li class="entrance-item">
+            <li class="entrance-item" @click="handleResourcse">
               <img src="static/image/manage_board/punchCard.png" alt="我的考勤">
               <!-- <span>我的资源</span> -->
 
@@ -43,7 +65,7 @@
                 <div class="entrance-item-label-dec hide_double">课外拓展、丰富职业技能</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleStudentScore">
               <img src="static/image/manage_board/certificate.png" alt="我的成绩">
               <!-- <span>我的成绩</span> -->
 
@@ -52,7 +74,7 @@
                 <div class="entrance-item-label-dec hide_double">查看各科理论考试和实践考核成绩</div>
               </div>
             </li>
-            <li class="entrance-item" >
+            <li class="entrance-item" @click="handleMySchedule">
               <img src="static/image/manage_board/schedule.png" alt="我的课表">
               <!-- <span>我的课表</span> -->
 
@@ -67,13 +89,13 @@
       <div class="right-personal-info">
         <div class="header-img">
           <label class="edit-header-img">
-            <input v-if="!showLogin" type="file" name="ClassImg" accept="image/gif,image/jpeg,image/jpg,image/png" style="display: none" @change="changeImage($event)">
+            <input type="file" name="ClassImg" accept="image/gif,image/jpeg,image/jpg,image/png" style="display: none" @change="changeImage($event)">
             <img :src="editInfo.pic" class="img-avatar" style="cursor: pointer">
-            <div v-if="!showLogin" class="edit-cover" >
+            <div class="edit-cover">
               <img src="static/image/edit_1.png" alt="更换头像" title="更换头像">
             </div>
           </label>
-          <b-button v-if="!showLogin" variant="outline-primary" style="margin-left: 30px" @click="editPassword">修改密码</b-button>
+          <b-button variant="outline-primary" style="margin-left: 30px" @click="editPassword">修改密码</b-button>
         </div>
         <div class="line"/>
         <div class="base-info">
@@ -87,7 +109,7 @@
             <p>学号：{{ basicInfo.jobNumber }}</p>
             <p>所在学校：{{ basicInfo.school }}</p>
             <p>所在院系：{{ basicInfo.college }}</p>
-            <el-button v-if="!showLogin" icon="el-icon-edit" size="mini" class="edit" type="primary" circle @click="handleshowGroupBox(false)"/>
+            <el-button icon="el-icon-edit" size="mini" class="edit" type="primary" circle @click="handleshowGroupBox(false)"/>
           </div>
         </div>
         <div class="line"/>
@@ -151,7 +173,7 @@
                 :value="item.id"/>
             </select>
           </div>
-          <div v-if="ifTeacher" class="group-form">
+          <div v-if="isTeacher" class="group-form">
             <div class="group-name">
               教师证
               <span>*</span>
@@ -257,10 +279,9 @@
 </template>
 
 <script>
-import Cookies from 'js-cookie'
 import $ from '@/assets/jquery-vendor'
 import ModalDialog from '@/components/modal-dialog'
-import { toast, formVaildStyle, formInVaildStyle, tokenKeyName } from '@/utils/global'
+import { toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
 import { handleImagePath } from '@/utils/util'
 export default {
   components: {
@@ -268,9 +289,11 @@ export default {
   },
   data() {
     return {
-      showLogin: true,
       basicInfo: {}, // 基本信息
       charmInfo: {}, // 魅力值信息
+      msgNum: 0, // 信息数
+      listNews: [], // 新闻条数
+      animate: false, // 控制动画
       oldEditInfo: {},
       editInfo: {
         traineeName: '',
@@ -285,7 +308,7 @@ export default {
       teacherNameState: null,
       teacherPic: '',
       isEditPic: false, // 是否编辑头像
-      ifTeacher: false,
+      isTeacher: false,
       traineeSexList: [{ id: 0, value: '保密' }, { id: 1, value: '男' }, { id: 2, value: '女' }],
       password: {
         originalPassword: '',
@@ -306,46 +329,61 @@ export default {
     }
   },
   created() {
+    // 获取个人信息
+    this.getPersonalInfo()
+    // 获取消息数
+    this.getMsgNum()
+    // 获取滚动新闻
+    this.getListNews()
+    setInterval(this.scroll, 3000)
   },
   mounted() {
-    const token = Cookies.get(tokenKeyName)
-    if (token) {
-      this.showLogin = false
-      // 获取个人信息
-      this.getPersonalInfo()
-    } else {
-       this.showLogin = true
-      this.$router.push('/login')
-    }
+
   },
   methods: {
+    handleStudentScore() {
+      this.$router.push('/student-score')
+    },
+    handleMySchedule() {
+      this.$router.push('/my-schedule')
+    },
+    handleAttendance() {
+      toast('小猿正在努力赶工中...')
+    },
+    handleResourcse() {
+      const blogRead = this.$router.resolve({
+        path: `/my-resources/index`
+      })
+      window.open(blogRead.href, '_blank')
+    },
     handleshowGroupBox(value) {
       this.isEditPic = value
       this.getPersonalInfo()
       this.oldEditInfo = JSON.parse(JSON.stringify(this.editInfo))
       $('#edit-user-box').modal('show')
     },
-    toLogin() {
-      localStorage.setItem('toLoginUrl', window.location.href)
-      this.$router.push('/login')
+    handleTeachingPackage() {
+      this.$router.push({
+        path: '/my-teaching-package'
+      })
+    },
+    handleTeachClass() {
+      this.$router.push({
+        path: `/my/classroom`
+      })
     },
     handleLearningClass() {
-      if (this.showLogin) {
-        this.toLogin()
-        return false
-      }
       this.$router.push({
         path: `/my/learning-classroom`
       })
     },
     handleBookshelf() {
-      if (this.showLogin) {
-        this.toLogin()
-        return false
-      }
       this.$router.push({
         path: `/my-bookshelf/my-bookshelf`
       })
+    },
+    handleMessaging() {
+      this.$router.push('/messaging/messaging')
     },
     // 点击上传图片
     changeImage(e) {
@@ -393,7 +431,7 @@ export default {
       $('#nickName').removeAttr('style')
       formVaildStyle('.nickNameHint', '#nickName')
 
-      if (this.ifTeacher) {
+      if (this.isTeacher) {
         if ((!this.editInfo.teacherErtificateNumber) || (this.editInfo.teacherErtificateNumber.length !== 17)) {
           formInVaildStyle('.teacherErtificateNumberHint', '#teacherErtificateNumber')
           $('#teacherErtificateNumber').css('borderColor', '#dc3545')
@@ -445,7 +483,7 @@ export default {
           formData.append('nickName', this.editInfo.nickName)
           formData.append('traineeSex', this.editInfo.traineeSex)
           formData.append('email', this.editInfo.email)
-          if (this.ifTeacher) {
+          if (this.isTeacher) {
             formData.append('teacherErtificateNumber', this.editInfo.teacherErtificateNumber)
           }
           formData.append('jobNumber', this.editInfo.jobNumber)
@@ -466,6 +504,25 @@ export default {
       this.clearValidate()
       $('#edit-user-box').modal('hide')
       this.editInfo = this.oldEditInfo
+    },
+    // 新闻滚动
+    scroll() {
+      this.animate = true
+      setTimeout(() => {
+        this.listNews.push(this.listNews[0])
+        this.listNews.shift()
+        this.animate = false
+      }, 500)
+    },
+    // 跳转我的博客页面
+    handleBlog() {
+      localStorage.setItem('isEditBlog', true)
+      this.$router.push('/blog')
+    },
+    // 新闻单个的详细页
+    toNewsread: function(box) {
+      localStorage.setItem('newsid', box)
+      this.$router.push('/news-read')
     },
     // 获取个人信息
     getPersonalInfo() {
@@ -488,13 +545,43 @@ export default {
             this.editInfo.jobNumber = res.data.basicInfo.jobNumber
             this.basicInfo = res.data.basicInfo
             this.charmInfo = res.data.charmInfo
-            this.ifTeacher = res.ifTeacher
+            this.isTeacher = res.isTeacher
             if (res.data.basicInfo.traineeSex) {
               this.editInfo.traineeSex = parseInt(res.data.basicInfo.traineeSex)
             }
           }
         }
       })
+    },
+    // 获取消息数
+    getMsgNum() {
+      this.$api.managementPanel.getMsgNum().then((res) => {
+        if (res.code === 0) {
+          this.msgNum = res.data
+        }
+      })
+    },
+    // 获取滚动新闻
+    getListNews() {
+      this.$api.managementPanel.listNews().then((res) => {
+        if (res.code === 0) {
+          if (res.data && res.data.length > 0) {
+            this.listNews = res.data
+          }
+        }
+      })
+    },
+    // 到所有新闻显示页面
+    getAllNews() {
+      let categoryId = ''
+      const ele = document.querySelector('.news-list')
+      if (ele) {
+        const lis = ele.querySelectorAll('li')
+        if (lis && lis[0]) {
+          categoryId = lis[0].getAttribute('data-id')
+        }
+      }
+      this.$router.push('/news-list?categoryId=' + categoryId)
     },
     /**
              * 修改密码
@@ -610,6 +697,14 @@ export default {
     .header-img label{
       display: inline-block;
     }
+    .news-info-btn-list{
+        margin-top:10px;
+        text-align: center;
+    }
+    .news-info-btn-list button{
+        width: 100px;
+        margin-right:10px;
+    }
     .group-form{
         display:flex;
         align-items: center;
@@ -642,14 +737,69 @@ export default {
     .begin-class-con .left-function .user-name{
         font-size:22px;
     }
+    .begin-class-con .left-function .news{
+        margin-top:20px;
+    }
+    .left-function .news .news-con{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        height:100px;
+        padding: 20px;
+        margin-top:10px;
+        border-radius: 5px;
+        background-color: #f2f6fa;
+    }
+    .left-function .news .news-con >img{
+        width:32px;
+        height:32px;
+    }
+    .left-function .news .news-con .carousel{
+        width: 75%;
+        height:100%;
+        overflow: hidden;
+    }
+   .news .news-con .carousel .news-list{
+        width: 100%;
+        height: 100%;
+        color: #8d949c;
+    }
+    .news .news-con .carousel .news-list{
+        width: 100%;
+        height: 60px;
+        line-height:60px;
+        padding-left:20px;
+    }
+    .news .news-con .carousel .animate_top {
+        transition: all 1s;
+        margin-top: -60px
+    }
+    .news .news-con .carousel .news-list >li{
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .left-function .news .news-con .detail{
+        color: #6e98db;
+        font-weight:600;
+        cursor: pointer;
+    }
+    .left-function .news .news-con .detail span{
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .left-function .news .news-con .detail >img{
+        width: 20px;
+        height: 20px;
+    }
     .entrance{
         width: 100%;
-        margin-top:15px;
+        margin-top:10px;
         border-top: 2px solid #e6e8ea;
     }
     .entrance .title{
         padding: 10px 0;
-        margin-top: 20px;
     }
     .entrance .entrance-list{
         display: flex;

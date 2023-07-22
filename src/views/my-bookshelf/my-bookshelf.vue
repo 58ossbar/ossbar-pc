@@ -12,7 +12,7 @@
               <li class="localtion-item" style="cursor: pointer" @click="toback()">
                 管理看板
               </li>
-              <li v-if="ifTeacher" class="localtion-item">
+              <li v-if="isTeacher" class="localtion-item">
                 <span >学习中心</span>
               </li>
               <li class="localtion-item">
@@ -91,7 +91,7 @@
         <div v-if="isNoData" class="notContent-describe">
           <img src="static/image/manage_board/creatkc.png" alt="">
           <div style="padding-left: 20px; color: #6a7275">
-            老师正在快马加鞭地添加此类教材<span class="dots"/>
+            暂无书籍<span class="dots"/>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
 
 <script>
 import { concatImgUrl, toast } from '@/utils/global'
-import HeaderNav from '@/components/header-nav'
+import HeaderNav from '@/components/header-nav-start-class'
 import Pager from '@/components/pager'
 export default {
   name: 'MyBookshelf',
@@ -113,7 +113,7 @@ export default {
   },
   data() {
     return {
-      ifTeacher: false,
+      isTeacher: false,
       clicked: 0, // 分类选择下标
       subClicked: 0, // 技术选中下标
       sortClicked: 0, // 排序选中下标
@@ -152,7 +152,7 @@ export default {
   mounted() {
     // 判断当前人的身份
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.ifTeacher = userInfo.ifTeacher
+    this.isTeacher = userInfo.isTeacher
     localStorage.removeItem('bookshelfReadData')
     // this.findDatas()
     this.$nextTick(function() {
@@ -215,7 +215,7 @@ export default {
     },
     // 返回
     toback() {
-      this.$router.push('/')
+      this.$router.push('/begin-class')
     },
     // 分页更新数据
     changeIndex(value, size) {

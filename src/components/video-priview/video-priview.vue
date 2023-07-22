@@ -1,25 +1,24 @@
 <!-- 视频预览组件 -->
 <template>
-  <div v-if="videoFlag" class="video-box">
-    <span class="close-btn" @click="close"/>
-    <video :src="urlString" autoplay="true" controls="controls">
-      您的浏览器不支持 video 标签。
-    </video>
-  </div>
+    <div class="video-box" v-if="videoFlag">
+        <span class="close-btn" @click="close"></span>
+        <video :src="urlString" autoplay="true" controls="controls">
+            您的浏览器不支持 video 标签。
+        </video>
+    </div>
 </template>
 
 <script>
-export default {
-  name: 'VideoPriview',
-  components: {
+ export default {
+    data () {
+        return {
 
-  },
-  data() {
-    return {
+        }
+    },
+    components: {
 
     }
-  }
-}
+ }
 </script>
 
 <style scoped>

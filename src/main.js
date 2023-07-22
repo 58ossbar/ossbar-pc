@@ -7,21 +7,18 @@ import store from './store'
 import constant from '@/utils/constant'
 import api from './http/index'
 import 'font-awesome/css/font-awesome.css'
-
-import { BootstrapVue } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'bootstrap/dist/js/bootstrap.js'
-
-// eslint-disable-next-line no-unused-vars
-import $ from './assets/jquery-vendor'
-// 引入第三方插件-ztree
-import '../static/creatorblue/ztree/js/jquery.ztree.core.js'
-import '../static/creatorblue/ztree/js/jquery.ztree.excheck.min.js'
-import '../static/creatorblue/ztree/js/jquery.ztree.exedit.min.js'
-import '../static/creatorblue/ztree/js/jquery.ztree.exhide.min.js'
-import '../static/creatorblue/ztree/css/awesomeStyle/awesome.css'
-
+import 'ztree/js/jquery.ztree.core.js'
+import 'ztree/js/jquery.ztree.excheck.js'
+import 'ztree/js/jquery.ztree.exhide.js'
+import 'ztree/js/jquery.ztree.exedit.js'
+import 'ztree/css/awesomeStyle/awesome.css'
+import '../static/creatorblue/vendor/Blob'
+import '../static/creatorblue/vendor/Export2Excel'
+import VueAwesomeSwiper from 'vue-awesome-swiper'
+import '../node_modules/swiper/dist/css/swiper.css'
 import '../static/iconfont/iconfont.css'
 import 'bootstrap-select/dist/js/bootstrap-select.js'
 import 'bootstrap-select/dist/css/bootstrap-select.css'
@@ -33,28 +30,40 @@ import 'viewerjs/dist/viewer.css'
 import videoPreview from '@/components/video-priview/index.js'
 
 /* 改变主题色变量 */
-/* 改变主题色变量 */
-import ElementUI from 'element-ui'
+// $--color-primary: teal
 import 'element-ui/lib/theme-chalk/index.css'
-import 'element-ui/lib/theme-chalk/icon.css' // element-ui 图标库
-/** 引用图标选择组件 */
-import iconPicker from 'e-icon-picker'
-import 'e-icon-picker/dist/symbol.js' // 基本彩色图标库
-import 'e-icon-picker/dist/index.css' // 基本样式，包含基本图标
-Vue.use(iconPicker, { FontAwesome: true, ElementUI: true, eIcon: true, eIconSymbol: false })// 使用e-icon-picker
 
 import '../static/creatorblue/comm.css'
 import '@/assets/prism.css'
 
+/* 引用webSocket */
+import { getUserInfo } from '@/utils/global'
+import webSockets from '@/utils/webSockets'
+
+// 引用seo配置
+import MetaInfo from 'vue-meta-info'
+
 Vue.use(api)
-Vue.use(BootstrapVue)
-Vue.use(ElementUI)
+/* 将webSocket 挂载到vue，成为 全局变量 */
+Vue.prototype.webSockets = webSockets
+const userInfo = getUserInfo()
+if (userInfo && userInfo.traineeId && userInfo.token) {
+  // if (Vue.prototype.webSockets.socketOpen) {
+  // Vue.prototype.webSockets.closeWebSocket()
+  // }
+  Vue.prototype.webSockets.setInit(this, {
+    paramStr: 'id=' + userInfo.traineeId + '&channel=site&token=' + userInfo.token
+  })
+}
+window.eventBus = new Vue() // 注册全局事件对象
 
 // 挂载
 Vue.prototype.constant = constant
 // 注册为全局组件
 Vue.config.productionTip = false
+Vue.use(VueAwesomeSwiper)
 Vue.use(videoPreview)
+Vue.use(MetaInfo)
 Vue.use(Viewer, {
   defaultOptions: {
     zIndex: 9999,
@@ -63,12 +72,35 @@ Vue.use(Viewer, {
     toolbar: {
       zoomIn: 1,
       zoomOut: 1,
+      // reset: 1,
+      // oneToOne: 1,
+      // rotateRight: 1,
       rotateLeft: 1
     }
   }
 })
 
-var vueApp = new Vue({
+// Viewer.setDefaults({
+//     Options: {
+//         'inline': true,
+//         'button': false,
+//         'navbar': true,
+//         'title': false,
+//         'toolbar': false,
+//         'tooltip': true,
+//         'movable': true,
+//         'zoomable': true,
+//         'rotatable': true,
+//         'scalable': true,
+//         'transition': true,
+//         'fullscreen': true,
+//         'keyboard': true,
+//         'url': 'data-source'
+//     }
+//   })
+/* eslint-disable no-new */
+
+var vueapp = new Vue({
   el: '#app',
   router,
   store,
@@ -76,5 +108,12 @@ var vueApp = new Vue({
   template: '<App/>'
 })
 export default {
-  vueApp
+  vueapp
 }
+
+// 下面这段代码处理此报错，若引起其它问题，删除即可。 vue-router.esm.js?ecb4:2051 Uncaught (in promise) NavigationDuplicated.......
+/* import Router from 'vue-router'
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}*/

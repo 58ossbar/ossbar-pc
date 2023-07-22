@@ -135,7 +135,22 @@
                 <div class="invalid-feedback col-10 textAlignLeft p-0 pkgLevelHint"><small >请选择试用层次！</small></div>
               </div>
             </div>
-
+            <div class="form-item">
+              <div class="input-hint">教材类型</div>
+              <div class="input-box">
+                <el-select
+                  id="pkgLevel"
+                  v-model="dataForm.pkgBookType"
+                  style="width:100%;"
+                  class="cb-pkg-form-font-size" >
+                  <el-option
+                    v-for="item in dictListPkgBookType"
+                    :key="item.dictId"
+                    :label="item.dictValue"
+                    :value="item.dictCode"/>
+                </el-select>
+              </div>
+            </div>
           </div>
 
           <div class="form-content">
@@ -219,21 +234,21 @@
                 <div class="invalid-feedback col-10 textAlignLeft p-0 pkgTraineeEmailHint"><small >请填写邮箱地址！</small></div>
               </div>
             </div>
-            <!--
-                        <div class="form-item">
-                            <div class="input-hint">关键字</div>
-                            <div class="input-box">
-                                <el-input
-                                    id="pkgKey"
-                                    maxlength="50"
-                                    type="text"
-                                    class="cb-pkg-form-font-size"
-                                    placeholder="请输入关键字" v-model="dataForm.pkgKey" ></el-input>
-                            </div>
-                        </div>-->
+            <div class="form-item">
+              <div class="input-hint">关键字</div>
+              <div class="input-box">
+                <el-input
+                  id="pkgKey"
+                  v-model="dataForm.pkgKey"
+                  maxlength="50"
+                  type="text"
+                  class="cb-pkg-form-font-size"
+                  placeholder="请输入关键字" />
+              </div>
+            </div>
           </div>
         </div>
-        <div class="add-package-info-form" >
+        <!-- <div class="add-package-info-form" >
           <div style="text-align: left;width: 10%;height: 60px;line-height: 60px;margin-right:3px;">关键字</div>
           <el-input
             id="pkgKey"
@@ -243,7 +258,7 @@
             placeholder="请输入关键字"
             maxlength="300"
             style="width: 83%;font-size: 14px;"/>
-        </div>
+        </div> -->
         <div class="add-package-info-form" >
           <div style="text-align: left;width: 10%;height: 100px;line-height: 100px;margin-right:3px;">简介</div>
           <el-input
@@ -275,10 +290,9 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
-import HeaderNav from '@/components/header-nav'
-import { toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
-import { handleImagePath } from '@/utils/util'
+import $ from 'jquery'
+import HeaderNav from '@/components/header-nav-start-class'
+import { baseUrl, toast, formVaildStyle, formInVaildStyle } from '@/utils/global'
 export default {
   name: 'AddPackageInfo',
   components: {
@@ -295,6 +309,7 @@ export default {
       isSubmitCom: false,
       dictListPkgLimit: [],
       dictListPkgLevel: [],
+      dictListPkgBookType: [],
       dataForm: {
         pkgId: '',
         pkgName: '',
@@ -311,7 +326,8 @@ export default {
         pkgTraineeEmail: '',
         pkgKey: '',
         pkgRemark: '',
-        pkgLogo: ''
+        pkgLogo: '',
+        pkgBookType: '1'
       }
     }
   },
@@ -324,13 +340,14 @@ export default {
     this.showDeployMainTypeListData()
     this.showPkgLimitListData()
     this.showPkgLevelListData()
+    this.showPkgBookTypeListData()
     // let pkgId = localStorage.getItem(this.constant.PKG_ID_FOR_UPDATE)
     const pkgId = this.$route.params.pkgId
     if (pkgId) {
       this.edit = true
       this.$api.pkgInfo.viewPkgInfoForUpdate(pkgId).then(res => {
         if (res.code === 0) {
-          res.data.pkgLogo = handleImagePath(res.data.pkgLogo)
+          res.data.pkgLogo = baseUrl + res.data.pkgLogo
           this.dataForm = Object.assign({}, res.data)
         }
       })
@@ -530,6 +547,7 @@ export default {
       formData.append('pkgTraineeEmail', this.dataForm.pkgTraineeEmail)
       formData.append('pkgKey', this.dataForm.pkgKey)
       formData.append('pkgDesc', this.dataForm.pkgDesc)
+      formData.append('pkgBookType', this.dataForm.pkgBookType)
       this.$api.pkgInfo.saveInfo(formData).then((res) => {
         if (res.code === 0) {
           // 此乃新增后返回的教学包主键,跳转页面请传参
@@ -611,8 +629,15 @@ export default {
           this.dictListPkgLevel = res.data
         }
       })
-    }
+    },
 
+    showPkgBookTypeListData() {
+      this.$api.dict.listPkgBookType().then((res) => {
+        if (res.code === 0) {
+          this.dictListPkgBookType = res.data
+        }
+      })
+    }
   }
 }
 </script>

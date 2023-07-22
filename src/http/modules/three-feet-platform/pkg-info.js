@@ -1,5 +1,14 @@
 import axios from '@/http/axios'
 
+export const exportWord = (data) => {
+  return axios({
+    url: '/pkginfo-api/export/toexport',
+    method: 'post',
+    responseType: 'blob',
+    data
+  })
+}
+
 export const getFilterTypeList = params => {
   return axios({
     url: '/pkginfo-api/getFilterTypeList',

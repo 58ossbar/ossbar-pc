@@ -1,7 +1,7 @@
 <!-- 我的课堂的显示页面 -->
 <template>
   <div class="backgroundColorGrey" >
-    <header-nav :current-index="ifTeacher ? 6 : 8" />
+    <header-nav :current-index="isTeacher ? 6 : 8" />
     <div class="my-teaching-nav wind-1240">
       <div class="display-flex">
         <div class="location">
@@ -10,13 +10,13 @@
             <li class="localtion-item" style="cursor: pointer" @click="toback()">
               管理看板
             </li>
-            <li v-if="!ifTeacher" class="localtion-item">
+            <li v-if="!isTeacher" class="localtion-item">
               <span style="color: #959da0">我的课堂</span>
             </li>
-            <li v-if="ifTeacher" class="localtion-item">
+            <li v-if="isTeacher" class="localtion-item">
               <span >学习中心</span>
             </li>
-            <li v-if="ifTeacher" class="localtion-item">
+            <li v-if="isTeacher" class="localtion-item">
               <span style="color: #959da0">{{ type }}</span>
             </li>
           </ul>
@@ -74,15 +74,34 @@
             <div v-show="(item.classroomTraineeState === 'N')" class="classroom-student-state">
               <span>{{ item.classroomTraineeStateName }}</span>
             </div>
-            <div :class="['classroom-state',item.classroomStateBg]"/>
+            <div :class="['classroom-state',item.classroomStateBg]">
+              <!-- <img v-if="item.classroomState==='2'" src="static/image/teaching_package/state.gif" alt="">
+                      <span>{{item.classroomStateName}}</span> -->
+            </div>
 
             <div class="classroom-state-title">
+              <!-- <div style="margin-right:2px;" v-if="item.classroomState==='2'">
+                          <img src="static/image/teaching_package/state.gif" alt="">
+                        </div> -->
               <span>{{ item.classroomStateName }}</span>
             </div>
           </div>
+          <!-- <div class="classroom-area-number">
+                    <div class="classroom-area-nums">
+                        <span>活动（<span>{{item.pkgActCount}}</span>）</span>
+                    </div>
+                    <div class="classroom-area-nums">
+                        <span>资源（<span>{{item.pkgResCount}}</span>）</span>
+                    </div>
+                </div> -->
+          <!-- <div :class="['classroom-state',item.classroomStateBg]">
+                    <img v-if="item.classroomState==='2'" src="static/image/teaching_package/state.gif" alt="">
+                    <span>{{item.classroomStateName}}</span>
+                </div> -->
           <div class="module_info">
             <div style="display: flex; justify-content: space-between">
               <div :title="item.name" class="classroom-name" style="text-align: left">{{ item.name }}</div>
+              <!-- <div class="class-name" :title="item.className" style="font-size: 12px;text-align: right">{{item.className}}</div> -->
               <div class="class-name" style="font-size: 12px;text-align: right">{{ item.subjectProperty }}</div>
             </div>
             <div class="teacher-info-area">
@@ -113,6 +132,14 @@
                 <div class="classroom-study-num">
                   <i class="fa fa-user-circle icon-study-num" aria-hidden="true"/><span>{{ item.studyNum }}</span>人学习
                 </div>
+                <el-dropdown v-if="item.classroomState !== '3'" style="margin-top: 3px" @command="handleCommand">
+                  <span class="el-dropdown-link">
+                    <i class="fa fa-list-ul" style="font-size: 20px" @click.stop=""/>
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item :command="beforeHandleCommand(6, item)" icon="el-icon-position">{{ item.isTop ? '取消置顶' : '置顶' }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
                 <div
                   v-if="false"
                   class="pull-down-btn"
@@ -127,7 +154,17 @@
                 </div>
               </div>
             </div>
+            <!-- <div class="module_hidden">
+                        <div class="classroom-intro">{{item.intro || '暂无简介'}}</div>
+                        <div style="color: #fe9e41;font-size: 13px;width: 100%;padding: 5px 20px;text-align: left;display: flex">
+                            <div style="width: 50%;overflow: hidden;height: 15px">为胜多负少</div>
+                            <div style="width: 50%;overflow: hidden;height: 15px">废物Joe附件为我违反为为</div>
+                        </div>
+                    </div> -->
           </div>
+          <!--<div class="classroom-student-state" v-show="(item.classroomTraineeState === 'N')">
+                  <span>{{item.classroomTraineeStateName}}</span>
+                </div>-->
         </div>
       </div>
       <div class="clear-both"/>
@@ -146,9 +183,9 @@
 </template>
 
 <script>
-import $ from '@/assets/jquery-vendor'
+import $ from 'jquery'
 import { baseUrl, confirm, toast } from '@/utils/global'
-import HeaderNav from '@/components/header-nav'
+import HeaderNav from '@/components/header-nav-start-class'
 import Pager from '@/components/pager'
 export default {
   name: 'LearningClassroom',
@@ -161,7 +198,7 @@ export default {
   },
   data() {
     return {
-      ifTeacher: false,
+      isTeacher: false,
       myClassList: [], // 课堂列表
       // 分页信息
       pagerInfo: {
@@ -186,15 +223,60 @@ export default {
     }
   },
   created() {
+    const that = this
+    window.eventBus.$on('eventBusReceivedMsgData', function(data) {
+      that.handleMessBackData(data)
+    })
   },
   mounted() {
+    localStorage.setItem('isShowActMsgModal', 'false')
+    if (localStorage.getItem('isFromMsgCommModal') && localStorage.getItem('isFromMsgCommModal') === 'true') {
+      this.$router.push({
+        path: '/teaching-center/teachingr-detail'
+      })
+      localStorage.setItem('isShowActMsgModal', 'true')
+      localStorage.setItem('isFromMsgCommModal', 'false')
+    }
     // 判断当前人的身份
     const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    this.ifTeacher = userInfo.ifTeacher
+    this.isTeacher = userInfo.isTeacher
     this.getDates()
     this.getClassList()
   },
   methods: {
+    beforeHandleCommand(command, value) {
+      const obj = {
+        command: command,
+        item: value
+      }
+      return obj
+    },
+    handleCommand(command) {
+      if (command.command === 6) {
+        this.setTop(command.item)
+      }
+    },
+
+    setTop(item) {
+      const formData = new FormData()
+      formData.append('ctId', item.ctId)
+      formData.append('value', item.isTop ? 'N' : 'Y')
+      this.$api.classroom.setTop(formData).then(res => {
+        if (res.code === 0) {
+          toast(res.msg)
+          this.getClassList()
+        }
+      })
+    },
+    /** 处理 返回的消息数据 */
+    handleMessBackData: function(res) {
+      const that = this
+      if (res.busitypeIndexNew === 16 || res.busitypeIndexNew === 17 || res.busitypeIndexNew === 18 || res.busitypeIndexNew === 19 || res.busitypeIndexNew === 24) { // 当申请加入某个课堂时  这个消息表示课堂创建者“通过”或者“不通过”了我的申请
+        if (res.code === 0) {
+          that.getClassList()
+        }
+      }
+    },
     // 分页更新数据
     changeIndex(value, size) {
       this.pagerInfo.currPage = value
@@ -206,7 +288,7 @@ export default {
          * 返回
          */
     toback: function() {
-      this.$router.push('/')
+      this.$router.push('/begin-class')
     },
 
     // 显示/关闭课堂成员操作
@@ -525,6 +607,14 @@ html,body{
     height: 30px;
     line-height: 30px;
     width: 50px;
+  }
+  .class-name{
+    font-size: 16px;
+    overflow: hidden;
+    padding: 7px 15px 7px 0;
+    height: 30px;
+    line-height: 30px;
+    width: 50%;
   }
   /* 活动数、资源数 */
   .classroom-area-number {
